@@ -17,6 +17,11 @@ users = {
     os.getenv("usnme"):generate_password_hash(os.getenv("pss"))
 }
 
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and \
+            check_password_hash(users.get(username), password):
+        return username
 
 def validate_t_request(f):
     @wraps(f)
@@ -33,6 +38,7 @@ def validate_t_request(f):
 
 @app.route("/sms", methods=['GET', 'POST'])
 @validate_t_request
+@auth.login_required
 def sms_reply():
     resp = MessagingResponse()
     body = "This  is a test text"
