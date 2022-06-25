@@ -13,8 +13,10 @@ load_dotenv()
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 users = {
-    os.getenv("usnme"):generate_password_hash(os.getenv("pss"))
+    "willryan":generate_password_hash(os.getenv("pss"))
 }
+
+print (str(users))
 
 @auth.verify_password
 def verify_password(username, password):
