@@ -16,8 +16,6 @@ users = {
     "willryan":generate_password_hash(os.getenv("pss"))
 }
 
-print (str(users))
-
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
