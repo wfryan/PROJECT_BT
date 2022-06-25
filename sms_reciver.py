@@ -11,8 +11,7 @@ import os, openpyxl
 load_dotenv()
 
 app = Flask(__name__)
-auth = HTTPBasicAuth
-
+auth = HTTPBasicAuth()
 users = {
     os.getenv("usnme"):generate_password_hash(os.getenv("pss"))
 }
