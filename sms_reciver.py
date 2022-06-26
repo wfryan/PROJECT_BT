@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import os, openpyxl
 
 load_dotenv()
-
+PORT_env = os.getenv("port")
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 users = {
@@ -45,5 +45,5 @@ def sms_reply():
     return str(resp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port = 9143, debug=True)
+    app.run(host="0.0.0.0", port = PORT_env, debug=True)
 
