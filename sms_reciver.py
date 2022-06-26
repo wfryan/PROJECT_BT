@@ -39,8 +39,11 @@ def validate_t_request(f):
 @validate_t_request
 @auth.login_required
 def sms_reply():
+
+    msg = request.values.get('Body', None)
+
     resp = MessagingResponse()
-    body = "This  is a test text"
+    body = "You said: " + msg
     resp.message(body)
     return str(resp)
 
