@@ -46,6 +46,8 @@ def sms_reply():
 
     resp = MessagingResponse()
     handleData(msg)
+    sender = request.values('From')
+    print(str(sender))
     body = formatMsg()
     resp.message(body)
     return str(resp)
