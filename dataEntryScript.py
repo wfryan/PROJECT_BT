@@ -11,7 +11,7 @@ priceLoc = 'B'
 minRow = '2'
 
 def setupSum():
-    wb = load_workbook(sheetP)
+    wb = load_workbook(sheetP, data_only=True)
     ws = wb.active
     nums = []
     sum = 0.0
@@ -32,7 +32,11 @@ def handleData(text):
     wb = load_workbook(sheetP, data_only=True)
     ws = wb.active
     if ws['G3'].value == None:
+        wb.save(sheetP)
+        wb.close()
         setupSum()
+    wb =  load_workbook(sheetP, data_only=True)
+    ws = wb.active
     if len(vals) > 1:
         price = vals[1][1:]
         itemLoc=  'A' + str(ws.max_row + 1)
