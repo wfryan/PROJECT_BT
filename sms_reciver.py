@@ -5,8 +5,10 @@ from twilio.twiml.messaging_response import MessagingResponse
 from functools import wraps
 from twilio.request_validator import RequestValidator
 from dotenv import load_dotenv
+from dataEntryScript import handleData
+from dataEntryScript import formatMsg
 
-import os, openpyxl
+import os
 
 load_dotenv()
 PORT_env = os.getenv("port")
@@ -43,7 +45,8 @@ def sms_reply():
     msg = request.values.get('Body', None)
 
     resp = MessagingResponse()
-    body = "You said: " + msg
+    handleData(msg)
+    body = formatMsg()
     resp.message(body)
     return str(resp)
 
