@@ -1,3 +1,4 @@
 .env
 /sheets/Budgeting-Finances.xlsx
 Budgeting-Finances.xlsx
+/__pycache__
