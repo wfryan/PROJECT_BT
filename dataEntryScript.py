@@ -4,14 +4,20 @@ import os, openpyxl
 from openpyxl import Workbook
 from openpyxl import load_workbook
 load_dotenv()
-sheetP = os.getenv("sheetpath")
+
 fileName = os.getenv("fname")
 #itemLoc = 'A'
 priceLoc = 'B'
 minRow = '2'
 
-def setupSum():
-    wb = load_workbook(sheetP, data_only=True)
+def setupSum(sender):
+    wb = 0
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+    else:
+        wb = Workbook()
     ws = wb.active
     nums = []
     sum = 0.0
@@ -27,14 +33,20 @@ def setupSum():
     wb.close()
     
 
-def handleData(text):
+def handleData(text, sender):
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
     vals = text.split('|')
-    wb = load_workbook(sheetP, data_only=True)
+    wb = 0
+    if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+    else:
+        wb = Workbook()
     ws = wb.active
     if ws['G3'].value == None:
         wb.save(sheetP)
         wb.close()
-        setupSum()
+        setupSum(sender)
     wb =  load_workbook(sheetP, data_only=True)
     ws = wb.active
     if len(vals) > 1:
@@ -49,8 +61,15 @@ def handleData(text):
     wb.save(sheetP)
     wb.close()
     
-def formatMsg():
-    wb = load_workbook(sheetP, data_only=True)
+def formatMsg(sender):
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    print(sheetP)
+    wb = 0
+    if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+    else:
+        wb = Workbook()
     ws = wb.active
     mr = ws.max_row
     pLoc = 'B' + str(mr)
@@ -59,15 +78,20 @@ def formatMsg():
     cost = ws[pLoc].value
     if ws['G3'].value == None:
         ws['G3'] = 0.0
-        setupSum()
+        setupSum(sender)
     totalSpent = float(ws['G3'].value)
+    if totalSpent is None:
+        totalSpent =  0
     totalRemaining = round(200 - totalSpent, 2)
     wb.save(sheetP)
     wb.close()
 
-    msg = "\nItem: " + str(item)
-    msg+= "\nPrice ($USD): " + str(round(cost, 2))
-    msg+= "\nTotal Spent ($USD): " + str(totalSpent)
-    msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
+    if item is None or cost is None:
+        msg =  "Empty Sheet"
+    else:
+        msg = "\nItem: " + str(item)
+        msg+= "\nPrice ($USD): " + str(round(cost, 2))
+        msg+= "\nTotal Spent ($USD): " + str(totalSpent)
+        msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 

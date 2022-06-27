@@ -43,12 +43,11 @@ def validate_t_request(f):
 def sms_reply():
 
     msg = request.values.get('Body', None)
+    sender = request.values.get('From', None)
 
     resp = MessagingResponse()
-    handleData(msg)
-    sender = request.values('From')
-    print(str(sender))
-    body = formatMsg()
+    handleData(msg, sender)
+    body = formatMsg(sender)
     resp.message(body)
     return str(resp)
 
