@@ -17,7 +17,7 @@ PORT_env = os.getenv("port")
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 users = {
-    "willryan":generate_password_hash(os.getenv("pss"))
+    str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
 
 @auth.verify_password
@@ -71,5 +71,5 @@ def sms_reply():
     return str(resp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port = PORT_env, debug=True)
+    app.run(host="0.0.0.0", port = PORT_env)
 

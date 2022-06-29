@@ -126,7 +126,7 @@ def genOverview(sender):
     totalSpent = float(ws['G3'].value)
     if totalSpent is None:
         totalSpent =  0
-    totalRemaining = round(200 - totalSpent, 2)
+    totalRemaining = round(float(os.getenv("budgCap")) - totalSpent, 2)
     wb.save(sheetP)
     wb.close()
     msg+= "\nTotal Spent ($USD): " + str(round(totalSpent, 2))
@@ -154,7 +154,7 @@ def formatMsg(sender):
     totalSpent = float(ws['G3'].value)
     if totalSpent is None:
         totalSpent =  0
-    totalRemaining = round(200 - totalSpent, 2)
+    totalRemaining = round(float(os.getenv("budgCap")) - totalSpent, 2)
     wb.save(sheetP)
     wb.close()
 
