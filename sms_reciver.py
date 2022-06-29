@@ -66,7 +66,7 @@ def sms_reply():
     elif "Overview" in msg:
         body = genOverview(sender)
     else:
-        body = formatMsg(sender)
+        body = "Last Purchase: \n" + formatMsg(sender)
     resp.message(body)
     return str(resp)
 
