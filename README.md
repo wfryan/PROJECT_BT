@@ -10,16 +10,18 @@ More to come. Planned features (6/29/2022):
 
 
 Basic Purchase Text
+
     Format of the text to send:
         Item/Loc | Price
 
     Format of Response
         Item: ##
         Price: ##
-        Total Spent: ##
-        Total Remaining: ##
+        Total Spent(USD): ##
+        Total Remaining(USD): ##
 
 Overview Command:
+
     Format of the text to send:
         Overview
 
@@ -27,7 +29,7 @@ Overview Command:
         Item | Price | Date Purchased (Repeats on new line for every item)
 
     After every item is listed:
-        Total Spent: ##
-        Total Remaining: ##
+        Total Spent(USD): ##
+        Total Remaining(USD): ##
 
 This definitly isn't a user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features
