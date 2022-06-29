@@ -5,9 +5,9 @@ Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep
 
 More to come.
 Planned features (6/29/2022):
-    Markup : *Command to export the spreadsheet and provide a download link
-             *Automatic budget remaining reminder 1 week before user's billing cycle day
-             *Setup form, let the user do an initial setup with their first text, allowing easier customization of billing cycle date and budget cap
+    *Command to export the spreadsheet and provide a download link
+    *Automatic budget remaining reminder 1 week before user's billing cycle day
+    *Setup form, let the user do an initial setup with their first text, allowing easier customization of billing cycle date and budget cap
 
 
 Basic Purchase Text
