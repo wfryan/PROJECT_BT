@@ -6,10 +6,9 @@ from functools import wraps
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
-from dataEntryScript import handleData
-from dataEntryScript import formatMsg
+from dataEntryScript import handleData, initNewAccount
+from dataEntryScript import formatMsg, handleTurn
 from dataEntryScript import genOverview
-
 import os
 
 load_dotenv()
@@ -65,6 +64,11 @@ def sms_reply():
         body = formatMsg(sender)
     elif "Overview" in msg:
         body = genOverview(sender)
+    elif "Init" in msg:
+        body = initNewAccount(sender)
+    elif "Refresh" in msg:
+        handleTurn(sender)
+        body = "\n\nSheet Refreshed"
     else:
         body = "Last Purchase: \n" + formatMsg(sender)
     resp.message(body)

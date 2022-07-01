@@ -5,7 +5,6 @@ from datetime import date
 from openpyxl import Workbook
 from openpyxl import load_workbook
 load_dotenv()
-#itemLoc = 'A'
 priceLoc = 'B'
 minRow = '2'
 
@@ -22,8 +21,12 @@ def handleTurn(sender):
         wsTemp['A1'] =  "Item / Location"
         wsTemp['B1'] = "Price"
         wsTemp['C1'] = "Date"
-        wsTemp['D1'] = "Remaining"
-        wsTemp['F1'] = "Money Spent"
+        wsTemp['D1'] = "Remaining: "
+        wsTemp['F1'] = "Money Spent:  "
+        wb.save(sheetP)
+        print(wb.sheetnames)
+        wb.close()
+        handleTurn(sender)
     else:
         ws = wb["Template"]
         wb._add_sheet(wb, wb.copy_worksheet(ws), 0)
@@ -35,10 +38,9 @@ def handleTurn(sender):
         if "Template" in wb.sheetnames:
             wb.remove(wb["Test title"])
         wb.move_sheet(ws, )
-    #ws = wb.active()
-    wb.save(sheetP)
-    print(wb.sheetnames)
-    wb.close()
+        wb.save(sheetP)
+        print(wb.sheetnames)
+        wb.close()
 
 
 def setupSum(sender):
@@ -60,6 +62,7 @@ def setupSum(sender):
     for x in range(len(nums)):
         sum= sum + float(nums[x])
     ws['G3'] = round(sum, 2)
+    ws['E3'] = round(float(os.getenv("budgCap")) - sum, 2)
     wb.save(sheetP)
     wb.close()
     
@@ -78,7 +81,7 @@ def handleData(text, sender):
         #print(date.today().day)
     else:
         handleTurn(sender)
-        wb = Workbook()
+        wb = load_workbook(sheetP, data_only=True)
         
     ws = wb.active
     if ws['G3'].value == None:
@@ -95,6 +98,7 @@ def handleData(text, sender):
         sum = float(ws['G3'].value)
         sum+= float(price)
         ws['G3'] = sum
+        ws['E3'] = round(float(os.getenv("budgCap")) - sum, 2)
         ws[itemLoc] = vals[0]
         ws[priceLoc] = float(price)
         ws[dateLoc] = str(date.today())
@@ -167,3 +171,6 @@ def formatMsg(sender):
         msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+def initNewAccount(sender):
+    print(sender)
+    return ("hello")
