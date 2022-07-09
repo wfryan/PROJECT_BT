@@ -59,13 +59,16 @@ def sms_reply():
     msg = request.values.get('Body', None)
     sender = request.values.get('From', None)
     resp = MessagingResponse()
-    if "|" in msg:
+    if "|" in msg and "Init" not in msg:
         handleData(msg, sender)
         body = formatMsg(sender)
     elif "Overview" in msg:
         body = genOverview(sender)
-    elif "Init" in msg:
-        body = initNewAccount(sender)
+    elif "Init" in msg and len(msg) < 6:
+        body = "Incorrect Format\n Correct Format: Init : Billing Date : Budget "
+    elif "Init"  in msg:
+        temp = msg.split(":")
+        body = initNewAccount(sender, temp[1][1:], temp[2][1:])
     elif "Refresh" in msg:
         handleTurn(sender)
         body = "\n\nSheet Refreshed"
@@ -75,5 +78,5 @@ def sms_reply():
     return str(resp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port = PORT_env)
+    app.run(host="0.0.0.0", port = PORT_env, debug=True)
 
