@@ -7,8 +7,11 @@ More to come.
 Planned features (6/29/2022):
 -    Command to export the spreadsheet and provide a download link
 -    Automatic budget remaining reminder 1 week before user's billing cycle day
--    Setup form, let the user do an initial setup with their first text, allowing easier customization of billing cycle date and budget cap
+-    Email command: send a copy of the spreadsheet to a specified email address   
 
+New Features(7/9/2022)
+- Setup form, let the user do an initial setup with their first text, allowing easier customization of billing cycle date and budget cap
+- Refresh: Manually refresh and make a new sheet on a new day (limit one per day)
 
 Basic Purchase Text
 
@@ -32,5 +35,17 @@ Overview Command:
     After every item is listed:
         Total Spent(USD): ##
         Total Remaining(USD): ##
+
+Init New Account:
+    
+    Format of text to send:
+        Init : Day : Budge
+
+    Will send a "wrong format text" if in correct format is used
+
+Refresh:
+
+    Format of text to send:
+        Refresh
 
 This definitly isn't a user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features

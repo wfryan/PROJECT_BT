@@ -5,9 +5,23 @@ from datetime import date
 from openpyxl import Workbook
 from openpyxl import load_workbook
 load_dotenv()
-#itemLoc = 'A'
 priceLoc = 'B'
 minRow = '2'
+
+def makeTemplate(sender):
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    wb = Workbook()
+    wsTemp = wb.create_sheet("Template")
+    wsTemp['A1'] =  "Item / Location"
+    wsTemp['B1'] = "Price"
+    wsTemp['C1'] = "Date"
+    wsTemp['D1'] = "Remaining: "
+    wsTemp['F1'] = "Money Spent:  "
+    wb.save(sheetP)
+    wb.close()
+    print(sender)
+
 
 def handleTurn(sender):
     wb = 0
@@ -16,29 +30,36 @@ def handleTurn(sender):
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
     else:
-        wb = Workbook()
-    if "Template" not in wb.sheetnames:
-        wsTemp = wb.create_sheet("Template")
-        wsTemp['A1'] =  "Item / Location"
-        wsTemp['B1'] = "Price"
-        wsTemp['C1'] = "Date"
-        wsTemp['D1'] = "Remaining"
-        wsTemp['F1'] = "Money Spent"
-    else:
+        makeTemplate(sender)
+        wb = load_workbook(sheetP, data_only=True)
+    
+    if "Template Copy" in wb.sheetnames:
+        wb.remove(wb["Template Copy"])
+
+    if str(date.today()) + "1" in wb.sheetnames:
+        wb.remove(wb[str(date.today()) + "1"])
+     
+    if "Template" in wb.sheetnames:
         ws = wb["Template"]
-        wb._add_sheet(wb, wb.copy_worksheet(ws), 0)
-        ws = wb["Template Copy"]
+        temp = wb.copy_worksheet(ws)
+        wb._add_sheet(temp, 0)
+        print(wb.sheetnames)
+        ws = 0
+        if "Template Copy" in wb.sheetnames:
+            ws = wb["Template Copy"]
         if str(date.today()) in wb.sheetnames:
-            ws.title = "Test title" #debug tool
-        else:
+            wb.remove(ws)
+            pass
+        elif str(date.today()) not in wb.sheetnames:
+            print("Adding sheet for today")
             ws.title = str(date.today())
-        if "Template" in wb.sheetnames:
-            wb.remove(wb["Test title"])
-        wb.move_sheet(ws, )
-    #ws = wb.active()
-    wb.save(sheetP)
-    print(wb.sheetnames)
-    wb.close()
+
+        wb.save(sheetP)
+        if "Template Copy" in wb.sheetnames:
+            wb.remove(wb["Template Copy"])
+        wb.save(sheetP)
+        print(wb.sheetnames)
+        wb.close()
 
 
 def setupSum(sender):
@@ -59,18 +80,25 @@ def setupSum(sender):
             nums.append(float(ws['B' +  str(i + 2)].value))
     for x in range(len(nums)):
         sum= sum + float(nums[x])
-    ws['G3'] = round(sum, 2)
+    ws['G1'] = round(sum, 2)
+    wsT = wb["Template"]
+    cap = wsT["M1"].value
+    ws['E1'] = round(float(cap) - sum, 2)
     wb.save(sheetP)
     wb.close()
     
 
 def handleData(text, sender):
-    billDate = os.getenv("billDate")
+    #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     vals = text.split('|')
     wb = 0
     if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+        wsT = wb["Template"]
+        billDate = wsT["N1"].value
+        wb.close()
         if date.today().day == billDate:
             handleTurn(sender)
         wb = load_workbook(sheetP, data_only=True)
@@ -78,10 +106,10 @@ def handleData(text, sender):
         #print(date.today().day)
     else:
         handleTurn(sender)
-        wb = Workbook()
+        wb = load_workbook(sheetP, data_only=True)
         
     ws = wb.active
-    if ws['G3'].value == None:
+    if ws['G1'].value == None:
         wb.save(sheetP)
         wb.close()
         setupSum(sender)
@@ -92,9 +120,10 @@ def handleData(text, sender):
         itemLoc = 'A' + str(ws.max_row + 1)
         priceLoc= 'B' + str(ws.max_row + 1)
         dateLoc = 'C' + str(ws.max_row + 1)
-        sum = float(ws['G3'].value)
+        sum = float(ws['G1'].value)
         sum+= float(price)
-        ws['G3'] = sum
+        ws['G1'] = sum
+        ws['E1'] = round(float(wb["Template"]["M1"].value) - sum, 2)
         ws[itemLoc] = vals[0]
         ws[priceLoc] = float(price)
         ws[dateLoc] = str(date.today())
@@ -123,10 +152,11 @@ def genOverview(sender):
             msg+= "Date Missing "
         else:
             msg+=  str(ws['C'  + str(i + 1)].value)
-    totalSpent = float(ws['G3'].value)
+    totalSpent = float(ws['G1'].value)
+    cap = wb["Template"]["M1"].value
     if totalSpent is None:
         totalSpent =  0
-    totalRemaining = round(float(os.getenv("budgCap")) - totalSpent, 2)
+    totalRemaining = round(float(cap) - totalSpent, 2) #TODO read budget cap from sheet
     wb.save(sheetP)
     wb.close()
     msg+= "\nTotal Spent ($USD): " + str(round(totalSpent, 2))
@@ -148,13 +178,13 @@ def formatMsg(sender):
     iLoc = 'A' + str(mr)
     item = ws[iLoc].value
     cost = ws[pLoc].value
-    if ws['G3'].value == None:
-        ws['G3'] = 0.0
+    if ws['G1'].value == None:
+        ws['G1'] = 0.0
         setupSum(sender)
-    totalSpent = float(ws['G3'].value)
+    totalSpent = float(ws['G1'].value)
     if totalSpent is None:
         totalSpent =  0
-    totalRemaining = round(float(os.getenv("budgCap")) - totalSpent, 2)
+    totalRemaining = round(float(wb["Template"]["M1"].value) - totalSpent, 2)
     wb.save(sheetP)
     wb.close()
 
@@ -167,3 +197,15 @@ def formatMsg(sender):
         msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+def initNewAccount(sender, billDate, budgCap):
+    sheetP = os.getenv("sheetpath")
+    makeTemplate(sender)
+    handleTurn(sender)
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    wb = load_workbook(sheetP, data_only=True)
+    ws = wb["Template"]
+    ws["M1"] = budgCap
+    ws["N1"] = billDate
+    wb.save(sheetP)
+    wb.close()
+    return ("Sheet Made: use format \nItem | Price\n to add an item")
