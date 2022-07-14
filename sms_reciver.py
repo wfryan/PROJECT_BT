@@ -1,3 +1,4 @@
+from hashlib import sha1
 from flask import Flask, current_app, request, redirect, abort
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,8 +8,9 @@ from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
 from dataEntryScript import handleData, initNewAccount
-from dataEntryScript import formatMsg, handleTurn
-from dataEntryScript import genOverview
+from dataEntryScript import formatMsg, setupSum
+from dataEntryScript import genOverview, sendSheet, changeDate
+from EmailSheet import sendMail
 import os
 
 load_dotenv()
@@ -69,9 +71,25 @@ def sms_reply():
     elif "Init"  in msg:
         temp = msg.split(":")
         body = initNewAccount(sender, temp[1][1:], temp[2][1:])
-    elif "Refresh" in msg:
-        handleTurn(sender)
-        body = "\n\nSheet Refreshed"
+    elif "Change Date" in msg.title():
+        if len(msg) > 14:
+            temp = msg.split(" ")
+            newDate = temp[len(temp)-1]
+            changeDate(newDate, sender)
+            body = "Billing Date Changed to: " + newDate
+        else:
+            body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
+    elif "Refresh" in msg.title():
+        setupSum(sender)
+        body = "Total spent recalculated: call overview to get an updated value"
+    elif "Email" in msg and "@" in msg:
+        splits = msg.split(" ")
+        addr = ""
+        for i in range(len(splits)):
+            if "@" in splits[i]:
+                addr = splits[i]
+        print (addr)
+        body = sendSheet(addr, sender)
     else:
         body = "Last Purchase: \n" + formatMsg(sender)
     resp.message(body)

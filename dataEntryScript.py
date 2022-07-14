@@ -4,10 +4,24 @@ import os, openpyxl
 from datetime import date
 from openpyxl import Workbook
 from openpyxl import load_workbook
+
+from EmailSheet import sendMail
 load_dotenv()
 priceLoc = 'B'
 minRow = '2'
-
+def changeDate(newDate, sender):
+    wb = 0
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+    ws = wb["Template"]
+    day = newDate.split("/")[1]
+    ws["N1"] = day
+    pval = ws["N1"].value
+    wb.save(sheetP)
+    wb.close()
+    print(pval)
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
@@ -86,6 +100,7 @@ def setupSum(sender):
     ws['E1'] = round(float(cap) - sum, 2)
     wb.save(sheetP)
     wb.close()
+    print("Sum calculated")
     
 
 def handleData(text, sender):
@@ -209,3 +224,9 @@ def initNewAccount(sender, billDate, budgCap):
     wb.save(sheetP)
     wb.close()
     return ("Sheet Made: use format \nItem | Price\n to add an item")
+
+def sendSheet(addr, sender):
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sendMail(addr, sheetP)
+    return("Your sheet was sent to: " + addr)
