@@ -65,6 +65,7 @@ Refresh:
         Total spent recalculated: call overview to get an updated value
 
 Change Date:
+
     Format of text to send:
         Change Date MM/DD/YY
 
@@ -75,6 +76,7 @@ Change Date:
             Incorrect Format: Use \"Change Date MM/DD/YY\" 
 
 Email:
+
     Format of text to send:
         Email dummyemail@realemail.com
     
