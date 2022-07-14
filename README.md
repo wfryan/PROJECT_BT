@@ -4,10 +4,23 @@ This is a simple program designed to help make budgeting easier for people. It r
 Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep track of their monthly budget simply by sending a text.
 
 More to come.
-Planned features (6/29/2022):
+Planned Features Updated (7/14/2022):
 -    Command to export the spreadsheet and provide a download link
 -    Automatic budget remaining reminder 1 week before user's billing cycle day
--    Email command: send a copy of the spreadsheet to a specified email address   
+-    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
+
+
+New Features (7/14/2022):
+- Email Command: Send a copy of the spreadsheet to an email address of your choosing!
+    - Note: Current version gets filtered out by spam filters. I'll work on fixing this so the emails are not sent to spam or junk.
+        - May be a little buggy, Management pushed the deadline up for this feature
+- Refresh Sum: Refreshes the total amount of money  spent during this month.
+    - Uses the "Refresh" command
+
+Other Changes (7/14/2022):
+- Refresh commannd:
+    - The previous iteration of the refresh command has been changed.
+    - It is now called Change Date and can be used to manually change the date of the budget period
 
 New Features(7/9/2022)
 - Setup form, let the user do an initial setup with their first text, allowing easier customization of billing cycle date and budget cap
@@ -47,5 +60,30 @@ Refresh:
 
     Format of text to send:
         Refresh
+
+    Response:
+        Total spent recalculated: call overview to get an updated value
+
+Change Date:
+    Format of text to send:
+        Change Date MM/DD/YY
+
+    Response:
+        Succesful Date Change:
+            Budget Date Changed to: MM/DD/YY
+        Unsuccesfull Date Change (due to format of text):
+            Incorrect Format: Use \"Change Date MM/DD/YY\" 
+
+Email:
+    Format of text to send:
+        Email dummyemail@realemail.com
+    
+    Response:
+        Succesful Email:
+            Your sheet was sent to: dummyemail@realemail.com
+
+        Unsuccesful Email (due to file missing):
+            File not found, please generate a spreadsheet to email it to someone
+
 
 This definitly isn't a user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features
