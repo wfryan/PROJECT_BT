@@ -76,7 +76,7 @@ def sms_reply():
             temp = msg.split(" ")
             newDate = temp[len(temp)-1]
             changeDate(newDate, sender)
-            body = "Billing Date Changed to: " + newDate
+            body = "Budget Date Changed to: " + newDate
         else:
             body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
     elif "Refresh" in msg.title():
@@ -88,7 +88,7 @@ def sms_reply():
         for i in range(len(splits)):
             if "@" in splits[i]:
                 addr = splits[i]
-        print (addr)
+
         body = sendSheet(addr, sender)
     else:
         body = "Last Purchase: \n" + formatMsg(sender)
@@ -97,4 +97,3 @@ def sms_reply():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port = PORT_env, debug=True)
-

@@ -35,16 +35,12 @@ def sendMail(toaddr, sheetP):
     )
     message.attach(part)
     text = message.as_string()
-    print("before ctx")
     context = ssl.create_default_context()
-    print("after ctx")
     with smtplib.SMTP("smtp.gmail.com", port) as server:
-        print("in with")
         server.ehlo()
         server.starttls(context=context)
         server.ehlo()
         server.login(senderemail, passw)
-        print("here ")
-        server.sendmail(senderemail, toaddr, text) #TODO setup email and password to test tls encrypted smtp server
-        #TODO send email from in here
+        server.sendmail(senderemail, toaddr, text) 
+        #TODO fix email being sent to spam filter
 
