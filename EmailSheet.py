@@ -5,6 +5,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import date
+import platform
 
 load_dotenv()
 def sendMail(toaddr, sheetP):
@@ -25,9 +26,12 @@ def sendMail(toaddr, sheetP):
         part = MIMEBase("application", "octet-stream")
         part.set_payload(attatchment.read())
 
-    splits = sheetP.split("\\")
+    if "Windows" in platform.system():
+        splits = sheetP.split("\\")
+    else:
+        splits = sheetP.split("/")
     temp = splits[len(splits) - 1]
-
+    print(temp)
     encoders.encode_base64(part)
     part.add_header(
         "Content-Disposition", 
