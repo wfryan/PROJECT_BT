@@ -229,7 +229,7 @@ def sendSheet(addr, sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
-        sendMail(addr, sheetP)
+        sendMail(addr, sheetP, sender)
         return("Your sheet was sent to: " + addr)
     else:
         return("File not found, please generate a spreadsheet to email it to someone")

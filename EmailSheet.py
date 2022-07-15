@@ -8,10 +8,10 @@ from datetime import date
 import platform
 
 load_dotenv()
-def sendMail(toaddr, sheetP):
+def sendMail(toaddr, sheetP, sender):
     senderemail = os.getenv("smtpusr")
     body = "Hello there, \n\n Here is the spreadsheet you requested"
-    subject = "Budget Spreadsheet"
+    subject = "Budget Spreadsheet - " + sender
 
     message = MIMEMultipart()
     message["Date"] = str(date.today())
