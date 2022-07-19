@@ -108,8 +108,14 @@ def turnOver():
             wsT = wb["Template"]
             billDate = wsT["N1"].value
             wb.save(filenme)
+            month = int(wb.sheetnames[0].split("-")[1])
             wb.close()
-            if str(date.today().day) == str(billDate):
+            if int(date.today().day) == int(billDate):
+                handleTurn(filenme)
+                print("New Cycle, sheet has turned over")
+                sendUsgNotif("New Cycle, sheet has turned over")
+                removeDupes(filenme)
+            elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
                 sendUsgNotif("New Cycle, sheet has turned over")
