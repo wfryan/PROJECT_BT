@@ -10,11 +10,11 @@ Planned Features Updated (7/19/2022):
 -    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
 -   Phone number hashing, so the filename can't be tied to a specific users phone number by the service
 
-In development (7/19/2022):
+New Features(07/19/2022):
 -   Automated billing cycle turnover, will automatically copy the template and make a new sheet for a new billing period.
-    -   Status: Working Prototype, needs more testing
+    -   Even accounts for the edge case caused by the delayed development of this feature
 -   Manual turnover, as a backup to manually turnover a new cycle, may require admin approval
-    -   Status: Framework already in place, needs further implementation
+    -   Requires adminstrator approval
 
 New Features (7/14/2022):
 - Email Command: Send a copy of the spreadsheet to an email address of your choosing!
