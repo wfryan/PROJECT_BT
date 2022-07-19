@@ -4,11 +4,17 @@ This is a simple program designed to help make budgeting easier for people. It r
 Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep track of their monthly budget simply by sending a text.
 
 More to come.
-Planned Features Updated (7/14/2022):
+Planned Features Updated (7/19/2022):
 -    Command to export the spreadsheet and provide a download link
 -    Automatic budget remaining reminder 1 week before user's billing cycle day
 -    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
+-   Phone number hashing, so the filename can't be tied to a specific users phone number by the service
 
+In development (7/19/2022):
+-   Automated billing cycle turnover, will automatically copy the template and make a new sheet for a new billing period.
+    -   Status: Working Prototype, needs more testing
+-   Manual turnover, as a backup to manually turnover a new cycle, may require admin approval
+    -   Status: Framework already in place, needs further implementation
 
 New Features (7/14/2022):
 - Email Command: Send a copy of the spreadsheet to an email address of your choosing!

@@ -4,13 +4,14 @@ import os, openpyxl
 from datetime import date
 from openpyxl import Workbook
 from openpyxl import load_workbook
-
+from sendMsgs import sendUsgNotif
 from EmailSheet import sendMail
+
 load_dotenv()
 priceLoc = 'B'
 minRow = '2'
 def changeDate(newDate, sender):
-    wb = 0
+    wb = None
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
@@ -36,15 +37,26 @@ def makeTemplate(sender):
     wb.close()
     print(sender)
 
+def removeDupes(sheetP):
+    wb = load_workbook(sheetP, data_only=True)
+    if "Template Copy" in wb.sheetnames:
+        wb.remove(wb["Template Copy"])
 
-def handleTurn(sender):
-    wb = 0
-    sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    if str(date.today()) + "1" in wb.sheetnames:
+        wb.remove(wb[str(date.today()) + "1"])
+    if str(date.today()) + "2" in wb.sheetnames:
+        wb.remove(wb[str(date.today()) + "1"])
+    wb.save(sheetP)
+    wb.close()
+
+
+
+def handleTurn(sheetP):
+    wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
     else:
-        makeTemplate(sender)
+        #makeTemplate(sender)
         wb = load_workbook(sheetP, data_only=True)
     
     if "Template Copy" in wb.sheetnames:
@@ -75,9 +87,31 @@ def handleTurn(sender):
         print(wb.sheetnames)
         wb.close()
 
+def turnOver():
+    fldrP = os.getenv("fldr")
+    listSheets = os.listdir(fldrP)
+    for fname in listSheets:
+        filenme = os.path.join(fldrP, fname)
+        if ".xlsx" in filenme and os.path.isfile(filenme):
+            wb = load_workbook(filenme, data_only=True)
+            wsT = wb["Template"]
+            billDate = wsT["N1"].value
+            wb.save(filenme)
+            wb.close()
+            if str(date.today().day) == str(billDate):
+                handleTurn(filenme)
+                print("New Cycle, sheet has turned over")
+                sendUsgNotif("New Cycle, sheet has turned over")
+                removeDupes(filenme)
+            else:
+                print("Not Today")
+        else:
+            print("Not a file")
+
+
 
 def setupSum(sender):
-    wb = 0
+    wb = None
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
@@ -86,7 +120,7 @@ def setupSum(sender):
         wb = Workbook()
     ws = wb.active
     nums = []
-    sum = 0.0
+    sum = 0.000
     for i in range(int(ws.max_row)):
         if ws['B' + str(i + 2)].value == None:
             break
@@ -108,28 +142,28 @@ def handleData(text, sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     vals = text.split('|')
-    wb = 0
+    wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
         wsT = wb["Template"]
         billDate = wsT["N1"].value
         wb.close()
         if date.today().day == billDate:
-            handleTurn(sender)
+            handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
 
         #print(date.today().day)
     else:
-        handleTurn(sender)
+        handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
         
-    ws = wb.active
+    ws = wb[wb.sheetnames[0]]
     if ws['G1'].value == None:
         wb.save(sheetP)
         wb.close()
         setupSum(sender)
     wb =  load_workbook(sheetP, data_only=True)
-    ws = wb.active
+    ws = wb[wb.sheetnames[0]]
     if len(vals) > 1:
         price = vals[1][1:]
         itemLoc = 'A' + str(ws.max_row + 1)
@@ -151,7 +185,8 @@ def genOverview(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     wb = load_workbook(sheetP, data_only=True)
-    ws = wb.active
+    print(wb.sheetnames)
+    ws = wb[wb.sheetnames[0]]
     msg = " \n Item | Price | Date "
     for i in range(ws.max_row):
         msg+="\n"
@@ -167,7 +202,10 @@ def genOverview(sender):
             msg+= "Date Missing "
         else:
             msg+=  str(ws['C'  + str(i + 1)].value)
-    totalSpent = float(ws['G1'].value)
+    if ws["G1"].value is None:
+        totalSpent = 0
+    else:
+        totalSpent = float(ws['G1'].value)
     cap = wb["Template"]["M1"].value
     if totalSpent is None:
         totalSpent =  0
@@ -182,12 +220,12 @@ def formatMsg(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     #print(sheetP)
-    wb = 0
+    wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
     else:
         wb = Workbook()
-    ws = wb.active
+    ws = wb[wb.sheetnames[0]]
     mr = ws.max_row
     pLoc = 'B' + str(mr)
     iLoc = 'A' + str(mr)

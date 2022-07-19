@@ -7,13 +7,26 @@ from functools import wraps
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
+from sendMsgs import sendUsgNotif
 from dataEntryScript import handleData, initNewAccount
-from dataEntryScript import formatMsg, setupSum
+from dataEntryScript import formatMsg, setupSum, turnOver
 from dataEntryScript import genOverview, sendSheet, changeDate
-from EmailSheet import sendMail
-import os
+import os, threading, time
+import schedule
+
 
 load_dotenv()
+
+def updateCycle():
+    while True:
+        schedule.run_pending()
+        time.sleep(10)
+
+schedule.every().day.at("23:25").do(turnOver)
+schedule.every().day.at("23:30").do(turnOver)
+cycleThread = threading.Thread(target=updateCycle)
+cycleThread.start()
+
 PORT_env = os.getenv("port")
 app = Flask(__name__)
 auth = HTTPBasicAuth()
@@ -40,17 +53,6 @@ def validate_t_request(f):
             return abort(403)
 
     return decorated_fn
-
-def sendUsgNotif(msg):
-    account_id = os.getenv("TWILIO_ACCOUNT_SID")
-    authToken = os.getenv("TWILIO_AUTH_TOKEN")
-    tNum = str(os.getenv("twilNum"))
-    adNum = str(os.getenv("adminNum"))
-    client = Client(account_id, authToken)
-    client.messages.create(
-        body =  msg,
-        from_ = tNum,
-        to=adNum)
 
 
 @app.route("/sms", methods=['GET', 'POST'])
