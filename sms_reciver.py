@@ -7,13 +7,25 @@ from functools import wraps
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
-from dataEntryScript import handleData, initNewAccount
-from dataEntryScript import formatMsg, setupSum
+from sendMsgs import sendUsgNotif
+from dataEntryScript import handleData, handleTurn, initNewAccount
+from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
-from EmailSheet import sendMail
-import os
+import os, threading, time
+import schedule
+
 
 load_dotenv()
+
+def updateCycle():
+    while True:
+        schedule.run_pending()
+        time.sleep(15)
+
+schedule.every().day.at("03:15").do(turnOver)
+cycleThread = threading.Thread(target=updateCycle)
+cycleThread.start()
+
 PORT_env = os.getenv("port")
 app = Flask(__name__)
 auth = HTTPBasicAuth()
@@ -40,17 +52,6 @@ def validate_t_request(f):
             return abort(403)
 
     return decorated_fn
-
-def sendUsgNotif(msg):
-    account_id = os.getenv("TWILIO_ACCOUNT_SID")
-    authToken = os.getenv("TWILIO_AUTH_TOKEN")
-    tNum = str(os.getenv("twilNum"))
-    adNum = str(os.getenv("adminNum"))
-    client = Client(account_id, authToken)
-    client.messages.create(
-        body =  msg,
-        from_ = tNum,
-        to=adNum)
 
 
 @app.route("/sms", methods=['GET', 'POST'])
@@ -90,6 +91,12 @@ def sms_reply():
                 addr = splits[i]
 
         body = sendSheet(addr, sender)
+    elif "Manual Override" in msg:
+        if os.getenv("overrideCode") in msg:
+            manualOverride(sender)
+            body = "Cycle override successful"
+        else:
+            body = "Contact Administrator"
     else:
         body = "Last Purchase: \n" + formatMsg(sender)
     resp.message(body)
