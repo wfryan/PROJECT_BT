@@ -8,8 +8,8 @@ from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
 from sendMsgs import sendUsgNotif
-from dataEntryScript import handleData, initNewAccount
-from dataEntryScript import formatMsg, setupSum, turnOver
+from dataEntryScript import handleData, handleTurn, initNewAccount
+from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
 import os, threading, time
 import schedule
@@ -20,10 +20,9 @@ load_dotenv()
 def updateCycle():
     while True:
         schedule.run_pending()
-        time.sleep(10)
+        time.sleep(15)
 
-schedule.every().day.at("23:25").do(turnOver)
-schedule.every().day.at("23:30").do(turnOver)
+schedule.every().day.at("03:15").do(turnOver)
 cycleThread = threading.Thread(target=updateCycle)
 cycleThread.start()
 
@@ -92,6 +91,12 @@ def sms_reply():
                 addr = splits[i]
 
         body = sendSheet(addr, sender)
+    elif "Manual Override" in msg:
+        if os.getenv("overrideCode") in msg:
+            manualOverride(sender)
+            body = "Cycle override successful"
+        else:
+            body = "Contact Administrator"
     else:
         body = "Last Purchase: \n" + formatMsg(sender)
     resp.message(body)

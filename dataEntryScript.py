@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-
 import os, openpyxl
 from datetime import date
 from openpyxl import Workbook
@@ -15,6 +14,9 @@ def changeDate(newDate, sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
+        wb = load_workbook(sheetP, data_only=True)
+    else:
+        makeTemplate(sender)
         wb = load_workbook(sheetP, data_only=True)
     ws = wb["Template"]
     day = newDate.split("/")[1]
@@ -49,7 +51,16 @@ def removeDupes(sheetP):
     wb.save(sheetP)
     wb.close()
 
-
+def manualOverride(sender):
+    sheetP = os.getenv("sheetpath")
+    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    if os.path.exists(sheetP):
+        handleTurn(sheetP)
+    else:
+        makeTemplate(sender)
+        handleTurn(sheetP)
+    
+    print("hello")
 
 def handleTurn(sheetP):
     wb = None
