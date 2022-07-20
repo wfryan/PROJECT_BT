@@ -25,6 +25,7 @@ def changeDate(newDate, sender):
     wb.save(sheetP)
     wb.close()
     print(pval)
+
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
@@ -125,8 +126,6 @@ def turnOver():
         else:
             print("Not a file")
 
-
-
 def setupSum(sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -153,7 +152,6 @@ def setupSum(sender):
     wb.close()
     print("Sum calculated")
     
-
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
@@ -195,7 +193,6 @@ def handleData(text, sender):
         ws[dateLoc] = str(date.today())
     wb.save(sheetP)
     wb.close()
-
 
 def genOverview(sender):
     msg = ""
