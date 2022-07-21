@@ -5,6 +5,7 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 from sendMsgs import sendUsgNotif
 from EmailSheet import sendMail
+import myLogger as mylog
 
 load_dotenv()
 priceLoc = 'B'
@@ -81,7 +82,7 @@ def handleTurn(sheetP):
         ws = wb["Template"]
         temp = wb.copy_worksheet(ws)
         wb._add_sheet(temp, 0)
-        print(wb.sheetnames)
+        mylog.logInfo("Sheetnames Accessed: " +str(wb.sheetnames))
         ws = 0
         if "Template Copy" in wb.sheetnames:
             ws = wb["Template Copy"]
@@ -114,17 +115,17 @@ def turnOver():
             if int(date.today().day) == int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                sendUsgNotif("New Cycle, sheet has turned over")
+                mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                sendUsgNotif("New Cycle, sheet has turned over")
+                mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             else:
-                print("Not Today")
+                mylog.logInfo("Not Today")
         else:
-            print("Not a file")
+            mylog.logInfo("Not a file")
 
 def setupSum(sender):
     wb = None
@@ -150,7 +151,7 @@ def setupSum(sender):
     ws['E1'] = round(float(cap) - sum, 2)
     wb.save(sheetP)
     wb.close()
-    print("Sum calculated")
+    mylog.logInfo("Sum calculated")
     
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
@@ -284,4 +285,5 @@ def sendSheet(addr, sender):
         sendMail(addr, sheetP, sender)
         return("Your sheet was sent to: " + addr)
     else:
+        mylog.logInfo("File not found, please generate a spreadsheet to email it to someone")
         return("File not found, please generate a spreadsheet to email it to someone")

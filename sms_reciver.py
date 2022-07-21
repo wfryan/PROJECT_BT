@@ -13,6 +13,7 @@ from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
 import os, threading, time
 import schedule
+import myLogger
 
 
 load_dotenv()
