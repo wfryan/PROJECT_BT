@@ -38,6 +38,7 @@ def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
+    print(request.values.get('From', None))
     sendUsgNotif("Message sent: Code 401")
 
 def validate_t_request(f):
