@@ -58,9 +58,11 @@ def manualOverride(sender):
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
         handleTurn(sheetP)
+        removeDupes(sheetP)
     else:
         makeTemplate(sender)
         handleTurn(sheetP)
+        removeDupes(sheetP)
     
     print("hello")
 

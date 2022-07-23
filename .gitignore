@@ -1,3 +1,4 @@
 .env
 /sheets
 /__pycache__
+/logs
