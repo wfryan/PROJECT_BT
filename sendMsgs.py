@@ -8,7 +8,7 @@ import os
 
 load_dotenv()
 def sendUsgNotif(msg):
-    mylog.logInfo(msg)
+    mylog.logWarn(msg)
     account_id = os.getenv("TWILIO_ACCOUNT_SID")
     authToken = os.getenv("TWILIO_AUTH_TOKEN")
     tNum = str(os.getenv("twilNum"))

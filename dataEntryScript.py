@@ -84,7 +84,7 @@ def handleTurn(sheetP):
         ws = wb["Template"]
         temp = wb.copy_worksheet(ws)
         wb._add_sheet(temp, 0)
-        mylog.logInfo("Sheetnames Accessed: " +str(wb.sheetnames))
+        #mylog.logInfo("Sheetnames Accessed: " +str(wb.sheetnames))
         ws = 0
         if "Template Copy" in wb.sheetnames:
             ws = wb["Template Copy"]
@@ -117,17 +117,20 @@ def turnOver():
             if int(date.today().day) == int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                mylog.logInfo("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                mylog.logInfo("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             else:
-                mylog.logInfo("Not Today")
+                pass
+                #mylog.logInfo("Not Today")
         else:
-            mylog.logInfo("Not a file")
+            pass
+            #mylog.logInfo("Not a file")
+           
 
 def setupSum(sender):
     wb = None
@@ -202,7 +205,7 @@ def genOverview(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     wb = load_workbook(sheetP, data_only=True)
-    print(wb.sheetnames)
+    mylog.logInfo("Sheetnames Accessed: " + str(wb.sheetnames))
     ws = wb[wb.sheetnames[0]]
     msg = " \n Item | Price | Date "
     for i in range(ws.max_row):
@@ -270,8 +273,8 @@ def formatMsg(sender):
 def initNewAccount(sender, billDate, budgCap):
     sheetP = os.getenv("sheetpath")
     makeTemplate(sender)
-    handleTurn(sender)
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    handleTurn(sheetP)
     wb = load_workbook(sheetP, data_only=True)
     ws = wb["Template"]
     ws["M1"] = budgCap

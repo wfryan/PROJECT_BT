@@ -13,7 +13,7 @@ from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
 import os, threading, time
 import schedule
-import myLogger
+import myLogger as mylog
 
 
 load_dotenv()
@@ -39,8 +39,11 @@ def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
-    print(request.values.get('From', None))
-    sendUsgNotif("Message sent: Code 401")
+    #print(request.values.get('From', None))
+    if request.values.get('From', None) in os.getenv("authNumbers"):
+        mylog.logInfo("Message Sent from Authorized Number")
+    else:
+     sendUsgNotif("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)
@@ -60,7 +63,6 @@ def validate_t_request(f):
 @validate_t_request
 @auth.login_required
 def sms_reply():
-
     msg = request.values.get('Body', None)
     sender = request.values.get('From', None)
     resp = MessagingResponse()
