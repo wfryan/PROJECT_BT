@@ -288,6 +288,7 @@ def sendSheet(addr, sender):
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
         sendMail(addr, sheetP, sender)
+        mylog.logInfo("Email Sent")
         return("Your sheet was sent to: " + addr)
     else:
         mylog.logInfo("File not found, please generate a spreadsheet to email it to someone")
