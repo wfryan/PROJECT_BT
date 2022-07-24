@@ -51,8 +51,8 @@ class myLogger:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-    def logDebug(self, msg, sender):
-        log = msg + "     From: " + sender
+    def logDebug(self, msg):
+        log = msg
         self.logger.debug(log)
         print("hello")
 
