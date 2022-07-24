@@ -70,6 +70,7 @@ testingLog.logInfo("\n\n\tTesting two threads at once\t\n\n")
 #TESTING LOGGING ON TWO THREADS AT ONCE
 testingThread2 = threading.Thread(target=tag)
 testingThread2.start()
+sleep(2)
 testingLog.logInfo("Two threads simultaneously")
 testingThread2.join()
 #TESTING SENDUSGNOTIF
