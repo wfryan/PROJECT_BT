@@ -59,7 +59,7 @@ testingLog.logDebug("\n\n\t TESTING LOGGER ON DIFFERENT THREAD, MAY BREAK \t\n\n
 def tag():
     words = ["Hi", " world", "new", "apples", "are", "nice"]
     for x in range(len(words)):
-        testingLog.logWarn("\n\n" + x + "\n\n")
+        testingLog.logWarn("\n\n" + words[x] + "\n\n")
         sleep(1)
 
 testingThread = threading.Thread(target=tag)
