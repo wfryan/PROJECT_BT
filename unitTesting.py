@@ -9,7 +9,7 @@ import sendMsgs
 load_dotenv()
 
 sheetP = os.getenv("sheetpath")
-sheetPOne = sheetP + "1234567890"+ ".xlsx"
+sheetPOne = sheetP + "+11234567890"+ ".xlsx"
 testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
 
 #TESTING INIT NEW ACCOUNT AND HANDLE DATA
