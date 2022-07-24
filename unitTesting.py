@@ -13,6 +13,8 @@ sheetPOne = sheetP + "1234567890"+ ".xlsx"
 testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
 
 #TESTING INIT NEW ACCOUNT AND HANDLE DATA
+
+testingLog.logDebug("\n\n\tTESTING INIT AND DATA HANDLING\t\n\n")
 dataEntryScript.initNewAccount("+11234567890", 17, 6969)
 dataEntryScript.handleData("Mike's Crack | 25", "+11234567890")
 dataEntryScript.handleData("Taza | 50", "+11234567890")
@@ -23,10 +25,12 @@ testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
 
 #TESTING EMAILING
+testingLog.logDebug("\n\n TESTING EMAIL FUNCTIONALITY \n\n")
 testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "+11234567890"))
 EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "+11234567890")
 
 #TESTING SETUP SUM
+testingLog.logDebug("\n\n\tTESTING SUM CORRECTION\t\n\n")
 dataEntryScript.setupSum("+11234567890")
 testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 wb = opxl.load_workbook(sheetPOne, data_only=True)
@@ -40,6 +44,7 @@ dataEntryScript.setupSum("+11234567890")
 testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 
 #TESTING HANDLE TURN, TURNOVER, CHANGEDATE, AND MAN OVERRIDE
+testingLog.logDebug("\t\n\nTESTING CYCLE TURNOVERS, auto and manual\t\n\n")
 dataEntryScript.turnOver()
 dataEntryScript.changeDate("1/12/11", "+11234567890")
 dataEntryScript.manualOverride("+11234567890")
