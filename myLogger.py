@@ -38,8 +38,8 @@ def logWarn(msg):
 
 class myLogger:
     def __init__(self, name, level, logName):
-        logger = logging.getLogger(name)
-        logger.setLevel(level)
+        self.logger = logging.getLogger(name)
+        self.logger.setLevel(level)
         if "Windows" in platform.system():
             logname = "logs\\" + logName
         else:
@@ -49,7 +49,7 @@ class myLogger:
         handler.suffix= "%Y%m%d"
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        self.logger.addHandler(handler)
 
     def logDebug(self, msg, sender):
         log = msg + "     From: " + sender
