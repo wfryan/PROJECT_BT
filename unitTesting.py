@@ -66,6 +66,10 @@ testingThread = threading.Thread(target=tag)
 testingThread.start()
 testingThread.join()
 
-
+testingLog.logInfo("\n\n\tTesting two threads at once\t\n\n")
+#TESTING LOGGING ON TWO THREADS AT ONCE
+testingThread.start()
+testingLog.logInfo("Two threads simultaneously")
+testingThread.join()
 #TESTING SENDUSGNOTIF
 #sendMsgs.sendUsgNotif("\n\n\tUnit Testing \n\n")
