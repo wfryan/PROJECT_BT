@@ -71,7 +71,7 @@ testingLog.logInfo("\n\n\tTesting two threads at once\t\n\n")
 testingThread2 = threading.Thread(target=tag)
 testingThread2.start()
 sleep(2)
-testingLog.logInfo("Two threads simultaneously")
+testingLog.logWarn("Two threads simultaneously")
 testingThread2.join()
 #TESTING SENDUSGNOTIF
 #sendMsgs.sendUsgNotif("\n\n\tUnit Testing \n\n")
