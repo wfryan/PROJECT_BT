@@ -4,7 +4,9 @@ import os
 from myLogger import myLogger
 import EmailSheet
 import openpyxl as opxl
+import threading
 import sendMsgs
+from time import sleep
 
 load_dotenv()
 
@@ -50,8 +52,20 @@ dataEntryScript.changeDate("1/12/11", "+11234567890")
 dataEntryScript.manualOverride("+11234567890")
 testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
-testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "+11234567890"))
 dataEntryScript.handleTurn(sheetPOne)
+
+#TESTING LOGGING ON MORE A DIFFERENT THREAD
+testingLog.logDebug("\n\n\t TESTING LOGGER ON DIFFERENT THREAD, MAY BREAK \t\n\n")
+def tag():
+    words = ["Hi", " world", "new", "apples", "are", "nice"]
+    for x in range(len(words)):
+        testingLog.logWarn("\n\n" + x + "\n\n")
+        sleep(1)
+
+testingThread = threading.Thread(target=tag)
+testingThread.start()
+testingThread.join()
+
 
 #TESTING SENDUSGNOTIF
 #sendMsgs.sendUsgNotif("\n\n\tUnit Testing \n\n")
