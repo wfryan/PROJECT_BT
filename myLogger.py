@@ -41,9 +41,9 @@ class myLogger:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
         if "Windows" in platform.system():
-            logname = "logs\\" + logName
+            logname = "logs\\" + logName + ".log"
         else:
-            logname = "logs/" + logName
+            logname = "logs/" + logName + ".log"
         handler = TimedRotatingFileHandler(logname, when = "midnight", interval=1)
         handler.setLevel(level)
         handler.suffix= "%Y%m%d"
