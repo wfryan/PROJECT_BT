@@ -13,7 +13,7 @@ from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
 import os, threading, time
 import schedule
-import myLogger as mylog
+import myLogger
 
 
 load_dotenv()
@@ -33,6 +33,8 @@ auth = HTTPBasicAuth()
 users = {
     str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
+
+mylog = myLogger("Access-Logger", 30, "Access-Log")
 
 @auth.verify_password
 def verify_password(username, password):

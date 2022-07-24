@@ -5,11 +5,13 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 from sendMsgs import sendUsgNotif
 from EmailSheet import sendMail
-import myLogger as mylog
+import myLogger
 
 load_dotenv()
 priceLoc = 'B'
 minRow = '2'
+
+myLog = myLogger("Automation-Logger", 10, "Event-Log" )
 def changeDate(newDate, sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -101,7 +103,9 @@ def handleTurn(sheetP):
         wb.save(sheetP)
         print(wb.sheetnames)
         wb.close()
-
+    else:
+        wb.save(sheetP)
+        wb.close()
 def turnOver():
     fldrP = os.getenv("fldr")
     listSheets = os.listdir(fldrP)
@@ -131,7 +135,6 @@ def turnOver():
             pass
             #mylog.logInfo("Not a file")
            
-
 def setupSum(sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -156,7 +159,7 @@ def setupSum(sender):
     ws['E1'] = round(float(cap) - sum, 2)
     wb.save(sheetP)
     wb.close()
-    mylog.logInfo("Sum calculated")
+    myLog.logInfo("Sum calculated")
     
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
@@ -205,7 +208,7 @@ def genOverview(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     wb = load_workbook(sheetP, data_only=True)
-    mylog.logInfo("Sheetnames Accessed: " + str(wb.sheetnames))
+    myLog.logInfo("Sheetnames Accessed: " + str(wb.sheetnames))
     ws = wb[wb.sheetnames[0]]
     msg = " \n Item | Price | Date "
     for i in range(ws.max_row):
@@ -288,8 +291,8 @@ def sendSheet(addr, sender):
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
         sendMail(addr, sheetP, sender)
-        mylog.logInfo("Email Sent")
+        myLog.logInfo("Email Sent")
         return("Your sheet was sent to: " + addr)
     else:
-        mylog.logInfo("File not found, please generate a spreadsheet to email it to someone")
+        myLog.logInfo("File not found, please generate a spreadsheet to email it to someone")
         return("File not found, please generate a spreadsheet to email it to someone")
