@@ -41,7 +41,7 @@ testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 
 #TESTING HANDLE TURN, TURNOVER, CHANGEDATE, AND MAN OVERRIDE
 dataEntryScript.turnOver()
-dataEntryScript.changeDate("12", "+11234567890")
+dataEntryScript.changeDate("1/12/11", "+11234567890")
 dataEntryScript.manualOverride("+11234567890")
 testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
