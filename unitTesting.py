@@ -1,7 +1,7 @@
 import dataEntryScript
 from dotenv import load_dotenv
 import os
-import myLogger
+from myLogger import myLogger
 import EmailSheet
 import openpyxl as opxl
 import sendMsgs

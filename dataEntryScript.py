@@ -5,7 +5,7 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 from sendMsgs import sendUsgNotif
 from EmailSheet import sendMail
-import myLogger
+from myLogger import myLogger
 
 load_dotenv()
 priceLoc = 'B'
