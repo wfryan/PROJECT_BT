@@ -43,9 +43,9 @@ def verify_password(username, password):
         return username
     #print(request.values.get('From', None))
     if request.values.get('From', None) in os.getenv("authNumbers"):
-        mylog.logInfo("Message Sent from Authorized Number")
+        mylog.logWarn("Message Sent from Authorized Number")
     else:
-     sendUsgNotif("Message sent: Code 401")
+     mylog.logWarn("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)
