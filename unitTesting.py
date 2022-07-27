@@ -18,7 +18,7 @@ testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
 
 testingLog.logDebug("\n\n\tTESTING INIT AND DATA HANDLING\t\n\n")
 dataEntryScript.initNewAccount("+11234567890", 17, 6969)
-dataEntryScript.handleData("Mike's Crack | 25", "+11234567890")
+dataEntryScript.handleData("Mike's Apple | 25", "+11234567890")
 dataEntryScript.handleData("Taza | 50", "+11234567890")
 dataEntryScript.handleData("Chipotle | 25", "+11234567890")
 dataEntryScript.handleData("Baja Blasted Vodka| 60", "+11234567890")
