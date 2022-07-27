@@ -11,9 +11,9 @@ from sendMsgs import sendUsgNotif
 from dataEntryScript import handleData, handleTurn, initNewAccount
 from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
-import os, threading, time
+import os, threading, time, platform
 import schedule
-
+from logging.handlers import TimedRotatingFileHandler
 
 load_dotenv()
 
@@ -33,12 +33,17 @@ users = {
     str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
 
+
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
-    sendUsgNotif("Message sent: Code 401")
+    #print(request.values.get('From', None))
+    if request.values.get('From', None) in os.getenv("authNumbers"):
+        app.logger.warning("Message Sent from Authorized Number")
+    else:
+     app.logger.warning("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)
@@ -58,7 +63,6 @@ def validate_t_request(f):
 @validate_t_request
 @auth.login_required
 def sms_reply():
-
     msg = request.values.get('Body', None)
     sender = request.values.get('From', None)
     resp = MessagingResponse()

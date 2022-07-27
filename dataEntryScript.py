@@ -5,10 +5,13 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 from sendMsgs import sendUsgNotif
 from EmailSheet import sendMail
+from myLogger import myLogger
 
 load_dotenv()
 priceLoc = 'B'
 minRow = '2'
+
+myLog = myLogger("Automation-Logger", 10, "Event-Log" )
 def changeDate(newDate, sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -24,7 +27,7 @@ def changeDate(newDate, sender):
     pval = ws["N1"].value
     wb.save(sheetP)
     wb.close()
-    print(pval)
+
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
@@ -56,11 +59,12 @@ def manualOverride(sender):
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
         handleTurn(sheetP)
+        removeDupes(sheetP)
     else:
         makeTemplate(sender)
         handleTurn(sheetP)
+        removeDupes(sheetP)
     
-    print("hello")
 
 def handleTurn(sheetP):
     wb = None
@@ -80,7 +84,7 @@ def handleTurn(sheetP):
         ws = wb["Template"]
         temp = wb.copy_worksheet(ws)
         wb._add_sheet(temp, 0)
-        print(wb.sheetnames)
+        #mylog.logInfo("Sheetnames Accessed: " +str(wb.sheetnames))
         ws = 0
         if "Template Copy" in wb.sheetnames:
             ws = wb["Template Copy"]
@@ -95,9 +99,10 @@ def handleTurn(sheetP):
         if "Template Copy" in wb.sheetnames:
             wb.remove(wb["Template Copy"])
         wb.save(sheetP)
-        print(wb.sheetnames)
         wb.close()
-
+    else:
+        wb.save(sheetP)
+        wb.close()
 def turnOver():
     fldrP = os.getenv("fldr")
     listSheets = os.listdir(fldrP)
@@ -113,20 +118,20 @@ def turnOver():
             if int(date.today().day) == int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                sendUsgNotif("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
-                sendUsgNotif("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             else:
-                print("Not Today")
+                pass
+                #mylog.logInfo("Not Today")
         else:
-            print("Not a file")
-
-
-
+            pass
+            #mylog.logInfo("Not a file")
+           
 def setupSum(sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -151,9 +156,8 @@ def setupSum(sender):
     ws['E1'] = round(float(cap) - sum, 2)
     wb.save(sheetP)
     wb.close()
-    print("Sum calculated")
+    myLog.logInfo("Sum calculated")
     
-
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
@@ -196,13 +200,12 @@ def handleData(text, sender):
     wb.save(sheetP)
     wb.close()
 
-
 def genOverview(sender):
     msg = ""
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     wb = load_workbook(sheetP, data_only=True)
-    print(wb.sheetnames)
+    myLog.logInfo("Sheetnames Accessed: " + str(wb.sheetnames))
     ws = wb[wb.sheetnames[0]]
     msg = " \n Item | Price | Date "
     for i in range(ws.max_row):
@@ -236,7 +239,6 @@ def genOverview(sender):
 def formatMsg(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
-    #print(sheetP)
     wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
@@ -270,8 +272,8 @@ def formatMsg(sender):
 def initNewAccount(sender, billDate, budgCap):
     sheetP = os.getenv("sheetpath")
     makeTemplate(sender)
-    handleTurn(sender)
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    handleTurn(sheetP)
     wb = load_workbook(sheetP, data_only=True)
     ws = wb["Template"]
     ws["M1"] = budgCap
@@ -285,6 +287,8 @@ def sendSheet(addr, sender):
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
     if os.path.exists(sheetP):
         sendMail(addr, sheetP, sender)
+        myLog.logInfo("Email Sent")
         return("Your sheet was sent to: " + addr)
     else:
+        myLog.logInfo("File not found, please generate a spreadsheet to email it to someone")
         return("File not found, please generate a spreadsheet to email it to someone")
