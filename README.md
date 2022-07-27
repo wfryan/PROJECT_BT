@@ -10,6 +10,10 @@ Planned Features Updated (7/19/2022):
 -    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
 -   Phone number hashing, so the filename can't be tied to a specific users phone number by the service
 
+Updates (07/27/2022):
+-   Mainly backend stuff. Added an event log to log when the automated tasks are run. Have more logging stuff to do but it can wait for now. Thats about it.
+
+
 New Features(07/19/2022):
 -   Automated billing cycle turnover, will automatically copy the template and make a new sheet for a new billing period.
     -   Even accounts for the edge case caused by the delayed development of this feature
