@@ -27,7 +27,6 @@ def changeDate(newDate, sender):
     pval = ws["N1"].value
     wb.save(sheetP)
     wb.close()
-    print(pval)
 
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
@@ -66,7 +65,6 @@ def manualOverride(sender):
         handleTurn(sheetP)
         removeDupes(sheetP)
     
-    print("hello")
 
 def handleTurn(sheetP):
     wb = None
@@ -101,7 +99,6 @@ def handleTurn(sheetP):
         if "Template Copy" in wb.sheetnames:
             wb.remove(wb["Template Copy"])
         wb.save(sheetP)
-        print(wb.sheetnames)
         wb.close()
     else:
         wb.save(sheetP)
@@ -242,7 +239,6 @@ def genOverview(sender):
 def formatMsg(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender)[2:] + ".xlsx"
-    #print(sheetP)
     wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)

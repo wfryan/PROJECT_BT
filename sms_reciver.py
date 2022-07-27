@@ -11,10 +11,9 @@ from sendMsgs import sendUsgNotif
 from dataEntryScript import handleData, handleTurn, initNewAccount
 from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate
-import os, threading, time
+import os, threading, time, platform
 import schedule
-from myLogger import myLogger
-
+from logging.handlers import TimedRotatingFileHandler
 
 load_dotenv()
 
@@ -34,7 +33,6 @@ users = {
     str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
 
-mylog = myLogger("Access-Logger", 30, "Access-Log")
 
 @auth.verify_password
 def verify_password(username, password):
@@ -43,9 +41,9 @@ def verify_password(username, password):
         return username
     #print(request.values.get('From', None))
     if request.values.get('From', None) in os.getenv("authNumbers"):
-        mylog.logWarn("Message Sent from Authorized Number")
+        app.logger.warning("Message Sent from Authorized Number")
     else:
-     mylog.logWarn("Message sent: Code 401")
+     app.logger.warning("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)

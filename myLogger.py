@@ -1,6 +1,6 @@
 import logging
 import platform
-from logging.handlers import TimedRotatingFileHandler
+from logging import FileHandler
 
 """#logger = logging.getLogger('simple')
 #logger.setLevel(10)
@@ -44,9 +44,8 @@ class myLogger:
             logname = "logs\\" + logName + ".log"
         else:
             logname = "logs/" + logName + ".log"
-        handler = TimedRotatingFileHandler(logname, when = "midnight", interval=1)
+        handler = FileHandler(logname)
         handler.setLevel(level)
-        handler.suffix= "%Y%m%d"
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
@@ -54,17 +53,17 @@ class myLogger:
     def logDebug(self, msg):
         log = msg
         self.logger.debug(log)
-        print("hello")
+
 
     def log401(self, msg):
         log = msg
         self.logger.warning(log)
-        print("hello")
+
 
     def logInfo(self, msg):
         log = msg
         self.logger.info(log)
-        print("hello")
+
 
     def logWarn(self, msg):
         log = msg
