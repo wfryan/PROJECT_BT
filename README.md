@@ -98,4 +98,16 @@ Email:
             File not found, please generate a spreadsheet to email it to someone
 
 
+Manual Override:
+
+    Format of text to send:
+        Manual Override *insert admin code*
+
+    Response:
+        Success:
+            Cycle Override Succesful
+
+        Failure:
+            Contact Administrator
+
 This definitly isn't a user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features
