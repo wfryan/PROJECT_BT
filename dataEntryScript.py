@@ -190,7 +190,10 @@ def handleData(text, sender):
         itemLoc = 'A' + str(ws.max_row + 1)
         priceLoc= 'B' + str(ws.max_row + 1)
         dateLoc = 'C' + str(ws.max_row + 1)
-        sum = float(ws['G1'].value)
+        if ws['G1'].value is None:
+            sum = 0.0
+        else:
+            sum = float(ws['G1'].value)
         sum+= float(price)
         ws['G1'] = sum
         ws['E1'] = round(float(wb["Template"]["M1"].value) - sum, 2)
