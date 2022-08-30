@@ -7,10 +7,11 @@ from functools import wraps
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
+import hashlib
 from sendMsgs import sendUsgNotif
 from dataEntryScript import handleData, handleTurn, initNewAccount
 from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
-from dataEntryScript import genOverview, sendSheet, changeDate
+from dataEntryScript import genOverview, sendSheet, changeDate, reHash
 import os, threading, time, platform
 import schedule
 from logging.handlers import TimedRotatingFileHandler
@@ -64,11 +65,18 @@ def validate_t_request(f):
 @auth.login_required
 def sms_reply():
     msg = request.values.get('Body', None)
-    sender = request.values.get('From', None)
+    sender = hashlib.sha256(request.values.get('From', None).encode('utf-8')).hexdigest()
     resp = MessagingResponse()
+    print(hash(sender[1:]))
     if "|" in msg and "Init" not in msg:
         handleData(msg, sender)
         body = formatMsg(sender)
+    elif "Hash" in msg.title():
+        if os.getenv("overrideCode") in msg:
+            reHash(request.values.get('From', None))
+            body = "File Rehased"
+        else:
+            body = "Invalid Permissions"
     elif "Overview" in msg:
         body = genOverview(sender)
     elif "Init" in msg and len(msg) < 6:
@@ -94,7 +102,7 @@ def sms_reply():
             if "@" in splits[i]:
                 addr = splits[i]
 
-        body = sendSheet(addr, sender)
+        body = sendSheet(addr, sender, request.values.get('From', None))
     elif "Manual Override" in msg:
         if os.getenv("overrideCode") in msg:
             manualOverride(sender)

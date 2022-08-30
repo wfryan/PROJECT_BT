@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os, openpyxl
+from hashlib import sha256
 from datetime import date
 from openpyxl import Workbook
 from openpyxl import load_workbook
@@ -15,7 +16,7 @@ myLog = myLogger("Automation-Logger", 10, "Event-Log" )
 def changeDate(newDate, sender):
     wb = None
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
     else:
@@ -30,7 +31,7 @@ def changeDate(newDate, sender):
 
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     wb = Workbook()
     wsTemp = wb.create_sheet("Template")
     wsTemp['A1'] =  "Item / Location"
@@ -56,7 +57,7 @@ def removeDupes(sheetP):
 
 def manualOverride(sender):
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     if os.path.exists(sheetP):
         handleTurn(sheetP)
         removeDupes(sheetP)
@@ -131,11 +132,43 @@ def turnOver():
         else:
             pass
             #mylog.logInfo("Not a file")
-           
+         
+def reHash(sender):
+    fldrP = os.getenv("fldr")
+    listSheets = os.listdir(fldrP)
+    for fname in listSheets:
+        filenme = os.path.join(fldrP, fname)
+        if str(sender[2:]) in filenme and os.path.isfile(filenme):
+            tempNme = "Budgeting_Finances-"+ str(sha256(sender.encode('utf-8')).hexdigest()) + ".xlsx"
+            newName = os.path.join(fldrP, tempNme)
+            os.rename(filenme, newName)
+            """wb = load_workbook(filenme, data_only=True)
+            wsT = wb["Template"]
+            billDate = wsT["N1"].value
+            wb.save(filenme)
+            month = int(wb.sheetnames[0].split("-")[1])
+            wb.close()
+            if int(date.today().day) == int(billDate):
+                handleTurn(filenme)
+                print("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
+                removeDupes(filenme)
+            elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
+                handleTurn(filenme)
+                print("New Cycle, sheet has turned over")
+                #mylog.logInfo("New Cycle, sheet has turned over")
+                removeDupes(filenme)
+            else:
+                pass
+                #mylog.logInfo("Not Today")
+        else:
+            pass
+            #mylog.logInfo("Not a file")"""
+
 def setupSum(sender):
     wb = None
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
     else:
@@ -161,7 +194,7 @@ def setupSum(sender):
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + sender + ".xlsx"
     vals = text.split('|')
     wb = None
     if os.path.exists(sheetP):
@@ -206,7 +239,7 @@ def handleData(text, sender):
 def genOverview(sender):
     msg = ""
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     wb = load_workbook(sheetP, data_only=True)
     myLog.logInfo("Sheetnames Accessed: " + str(wb.sheetnames))
     ws = wb[wb.sheetnames[0]]
@@ -241,7 +274,7 @@ def genOverview(sender):
 
 def formatMsg(sender):
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
@@ -275,7 +308,7 @@ def formatMsg(sender):
 def initNewAccount(sender, billDate, budgCap):
     sheetP = os.getenv("sheetpath")
     makeTemplate(sender)
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(sender) + ".xlsx"
     handleTurn(sheetP)
     wb = load_workbook(sheetP, data_only=True)
     ws = wb["Template"]
@@ -285,9 +318,9 @@ def initNewAccount(sender, billDate, budgCap):
     wb.close()
     return ("Sheet Made: use format \nItem | Price\n to add an item")
 
-def sendSheet(addr, sender):
+def sendSheet(addr, filenme, sender):
     sheetP = os.getenv("sheetpath")
-    sheetP = sheetP + str(sender)[2:] + ".xlsx"
+    sheetP = sheetP + str(filenme) + ".xlsx"
     if os.path.exists(sheetP):
         sendMail(addr, sheetP, sender)
         myLog.logInfo("Email Sent")
