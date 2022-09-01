@@ -1,4 +1,4 @@
-from hashlib import sha1, sha256, sha512
+from hashlib import sha256, sha512
 import dataEntryScript
 from dotenv import load_dotenv
 import os
@@ -18,7 +18,7 @@ parser.add_argument('--msgSend', help='Disables the send message testing for dif
 
 args = parser.parse_args()
 sheetP = os.getenv("sheetpath")
-sheetPOne = sheetP + "1234567890"+ ".xlsx"
+sheetPOne = sheetP + "+11234567890"+ ".xlsx"
 testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
 
 #TESTING INIT NEW ACCOUNT AND HANDLE DATA
