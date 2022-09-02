@@ -33,6 +33,17 @@ dataEntryScript.handleData("Fairlife IceCream | 4.59", "+11234567890")
 testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
 testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
 
+
+dataEntryScript.initJsonAccount("+10987654321", "Unit-Testing.xlsx", 17, 6969)
+print(dataEntryScript.getUser(sha256(b"+10987654321").hexdigest()))
+dataEntryScript.handleDataFromJson("Mike's Apple | 25", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Taza | 50", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Chipotle | 25", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Baja Blasted Vodka| 60", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Fairlife IceCream | 4.59", sha256(b"+10987654321").hexdigest())
+
+
+
 print(args.email)
 #TESTING EMAILING
 if args.email == 1:
@@ -88,8 +99,11 @@ testingThread2.join()
 
 
 #TESTTING HASH DEVELOPMENT
+testingLog.logWarn("\n\tHASHING TESTS: EXPECT SLOWDOWN\n")
 print(sha512(b"+11234567890").hexdigest())
 print(sha256(b"+11234567890").hexdigest())
 print(hash("+11234567890"))
 print(hash("+11234567890"))
 dataEntryScript.reHash("+11234567890")
+
+dataEntryScript.makeJsonData("+17817750100",sha256(b"+17817750100").hexdigest(), "protect the turtles", 1700, 17)

@@ -9,7 +9,7 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 import hashlib
 from sendMsgs import sendUsgNotif
-from dataEntryScript import handleData, handleTurn, initNewAccount
+from dataEntryScript import formatMsgJson, genOverviewJson, handleData, handleDataFromJson, handleTurn, initJsonAccount, initNewAccount, sendSheetJson
 from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
 from dataEntryScript import genOverview, sendSheet, changeDate, reHash
 import os, threading, time, platform
@@ -69,8 +69,8 @@ def sms_reply():
     resp = MessagingResponse()
     print(hash(sender[1:]))
     if "|" in msg and "Init" not in msg:
-        handleData(msg, sender)
-        body = formatMsg(sender)
+        handleDataFromJson(msg, sender)
+        body = formatMsgJson(sender)
     elif "Hash" in msg.title():
         if os.getenv("overrideCode") in msg:
             reHash(request.values.get('From', None))
@@ -78,7 +78,7 @@ def sms_reply():
         else:
             body = "Invalid Permissions"
     elif "Overview" in msg:
-        body = genOverview(sender)
+        body = genOverviewJson(sender)
     elif "Init" in msg and len(msg) < 6:
         body = "Incorrect Format\n Correct Format: Init : Billing Date : Budget "
     elif "Init"  in msg:
@@ -102,7 +102,11 @@ def sms_reply():
             if "@" in splits[i]:
                 addr = splits[i]
 
-        body = sendSheet(addr, sender, request.values.get('From', None))
+        body = sendSheetJson(addr, sender)
+    elif "JSON" in msg:
+        splits = msg.split(":")
+        initJsonAccount(request.values.get('From', None), splits[1], splits[2], splits[3])
+        body = "json made"
     elif "Manual Override" in msg:
         if os.getenv("overrideCode") in msg:
             manualOverride(sender)
@@ -110,7 +114,7 @@ def sms_reply():
         else:
             body = "Contact Administrator"
     else:
-        body = "Last Purchase: \n" + formatMsg(sender)
+        body = "Last Purchase: \n" + formatMsgJson(sender)
     resp.message(body)
     return str(resp)
 
