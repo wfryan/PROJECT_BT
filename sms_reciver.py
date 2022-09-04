@@ -9,8 +9,8 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 import hashlib
 from sendMsgs import sendUsgNotif
-from dataEntryScript import formatMsgJson, genOverviewJson, handleData, handleDataFromJson, handleTurn, initJsonAccount, initNewAccount, sendSheetJson
-from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
+from dataEntryScript import formatMsgJson, genOverviewJson, handleData, handleDataFromJson, handleTurn, initJsonAccount, initNewAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
+from dataEntryScript import turnOver
 from dataEntryScript import genOverview, sendSheet, changeDate, reHash
 import os, threading, time, platform
 import schedule
@@ -71,19 +71,13 @@ def sms_reply():
     if "|" in msg and "Init" not in msg:
         handleDataFromJson(msg, sender)
         body = formatMsgJson(sender)
-    elif "Hash" in msg.title():
-        if os.getenv("overrideCode") in msg:
-            reHash(request.values.get('From', None))
-            body = "File Rehased"
-        else:
-            body = "Invalid Permissions"
     elif "Overview" in msg:
         body = genOverviewJson(sender)
     elif "Init" in msg and len(msg) < 6:
-        body = "Incorrect Format\n Correct Format: Init : Billing Date : Budget "
+        body = "Incorrect Format\n Correct Format: Init : File Name : Billing Date : Budget "
     elif "Init"  in msg:
         temp = msg.split(":")
-        body = initNewAccount(sender, temp[1][1:], temp[2][1:])
+        body = initJsonAccount(request.values.get('From', None), temp[1][1:], temp[2][1:], temp[3][1:])
     elif "Change Date" in msg.title():
         if len(msg) > 14:
             temp = msg.split(" ")
@@ -93,7 +87,7 @@ def sms_reply():
         else:
             body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
     elif "Refresh" in msg.title():
-        setupSum(sender)
+        setupSumJson(sender)
         body = "Total spent recalculated: call overview to get an updated value"
     elif "Email" in msg and "@" in msg:
         splits = msg.split(" ")
@@ -105,11 +99,11 @@ def sms_reply():
         body = sendSheetJson(addr, sender)
     elif "JSON" in msg:
         splits = msg.split(":")
-        initJsonAccount(request.values.get('From', None), splits[1], splits[2], splits[3])
-        body = "json made"
+        jsonIfy(request.values.get('From', None)[2:], sender, splits[1])
+        body = formatMsgJson(sender) + "\n\n" + genOverviewJson(sender)
     elif "Manual Override" in msg:
         if os.getenv("overrideCode") in msg:
-            manualOverride(sender)
+            manualOverJson(sender)
             body = "Cycle override successful"
         else:
             body = "Contact Administrator"

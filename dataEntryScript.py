@@ -1,3 +1,4 @@
+from time import sleep
 from dotenv import load_dotenv
 import json
 import os, openpyxl
@@ -32,6 +33,23 @@ def changeDate(newDate, sender):
     wb.save(sheetP)
     wb.close()
 
+def changeDateJson(newDate, senderHash):
+    user = getUser(senderHash)
+    data = json.load(open('users.json', 'r'))
+    day = newDate.split("/")[1]
+
+    for x in data['users']:
+        print(x['id'])
+        if x['id'] == user['id']:
+            print(x['id'])
+            data['users'][data['users'].index(x)]['cycle_date'] = int(day)
+            break
+
+    json.dump(data, open('temp.json', 'w'), indent = 4)
+    os.rename('temp.json', 'users.json')
+
+
+
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender) + ".xlsx"
@@ -46,15 +64,39 @@ def makeTemplate(sender):
     wb.close()
     print(sender)
 
+def makeTemplateJson(senderHash):
+    user = getUser(senderHash)
+    sheetP = os.getenv("sheetpath") + user['filename']
+    wb = Workbook()
+    wsTemp = wb.create_sheet("Template")
+    wsTemp['A1'] =  "Item / Location"
+    wsTemp['B1'] = "Price"
+    wsTemp['C1'] = "Date"
+    wsTemp['D1'] = "Remaining: "
+    wsTemp['F1'] = "Money Spent:  "
+    wb.save(sheetP)
+    wb.close()
+    print(user['username'])
+
 def removeDupes(sheetP):
     wb = load_workbook(sheetP, data_only=True)
-    if "Template Copy" in wb.sheetnames:
+    wsnL = []
+    for sheetN in wb.sheetnames:
+        if "Template Copy" in sheetN:
+            wsnL.append(sheetN)
+        if str(date.today()) in sheetN and len(sheetN) > len(str(date.today())):
+            wsnL.append(sheetN)
+    
+    for sheetN in wsnL:
+        wb.remove(wb[sheetN])
+
+    """if "Template Copy" in wb.sheetnames:
         wb.remove(wb["Template Copy"])
 
-    if str(date.today()) + "1" in wb.sheetnames:
+    if str(date.today())in wb.sheetnames:
         wb.remove(wb[str(date.today()) + "1"])
     if str(date.today()) + "2" in wb.sheetnames:
-        wb.remove(wb[str(date.today()) + "1"])
+        wb.remove(wb[str(date.today()) + "1"])"""
     wb.save(sheetP)
     wb.close()
 
@@ -68,7 +110,16 @@ def manualOverride(sender):
         makeTemplate(sender)
         handleTurn(sheetP)
         removeDupes(sheetP)
-    
+
+def manualOverJson(sendHash):
+    sheetP = os.getenv("sheetpath") + getUser(sendHash)['filename']
+    if "User not found" in sheetP and not os.path.exists(sheetP):
+        pass
+    else:
+        handleTurn(sheetP)
+        removeDupes(sheetP)
+
+
 
 def handleTurn(sheetP):
     wb = None
@@ -120,7 +171,7 @@ def turnOver():
                 for user in data:
                     if user['filename'] is filenme:
                         billDate = user["cycle_date"]
-                        break
+                        continue
             else:
                 billDate = wsT["N1"].value
             wb.save(filenme)
@@ -481,14 +532,17 @@ def makeTempJson(sheetP):
 
 
 def initJsonAccount(sender, un, billDate, budg):
-    fname = makeJsonData(sender, sha256(sender.encode('utf-8')).hexdigest(), un, budg, billDate)
+    fname = makeJsonData(sha256(sender.encode('utf-8')).hexdigest(), un, budg, billDate)
     sheetP = os.getenv("sheetpath") + fname
     makeTempJson(sheetP)
     handleTurn(sheetP)
 
-def makeJsonData(sender, senderHash, un, budg, cycle):
+def makeJsonData(senderHash, un, budg, cycle):
     listIds = []
     data = json.load(open('users.json', 'r'))
+    if ".xlsx" not in un:
+        un+= ".xlsx"
+    
     for x in data['users']:
         listIds.append(x['id'])
     if senderHash in listIds:
@@ -497,21 +551,43 @@ def makeJsonData(sender, senderHash, un, budg, cycle):
     else:
         word = ''.join(random.choice(string.ascii_letters) for i in range(26))
         fn = sha256(word.encode('utf-8')).hexdigest() + ".xlsx"
-        newUser = myClasses.User(senderHash, fn, un, budg, cycle)
+        newUser = myClasses.User(senderHash, fn, un, int(budg), int(cycle))
         data['users'].append(newUser.__dict__)
         json.dump(data, open('temp.json', 'w'), indent = 4)
         os.rename('temp.json', 'users.json')
         print("writing json")
         return fn
 
+def jsonIfy(sender, senderHash, un):
+    p = os.getenv("sheetpath")
+    sheetP = None
+    if os.path.exists(p + sender + ".xlsx"):
+        sheetP = p = sender + ".xlsx"
+    else:
+        sheetP = p + "Budgeting-Finances" + sender + ".xlsx"
+    wb = load_workbook(sheetP, data_only=True)
+    wst = wb["Template"]
+    budg = wst["M1"].value
+    cycleD = wst["N1"].value
+    fn = os.getenv("sheetpath") + makeJsonData(senderHash, un, budg, cycleD)
+    wst['M1'] = None
+    wst['N1'] = None
+    wb.save(sheetP)
+    wb.close()
+    os.rename(sheetP, fn)
+    print(genOverviewJson(senderHash))
+    
+    print("hello")
+
 def getUser(sendHash):
     data = json.load(open('users.json', 'r'))
     y = None
     for x in data['users']:
         if x['id'] == sendHash:
-            print(x)
             y = x
             break
+    if y is None:
+        y = "User does not exist!"
 
     return y
             

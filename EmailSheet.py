@@ -75,7 +75,7 @@ def sendMailJson(toaddr, sheetP, user):
     encoders.encode_base64(part)
     part.add_header(
         "Content-Disposition", 
-        f"attatchment; filename= {user['username']}",
+        f"attatchment; filename= {user['username'].replace(' ', '-')[1:]}",
     )
     message.attach(part)
     text = message.as_string()

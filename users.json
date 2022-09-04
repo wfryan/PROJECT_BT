@@ -12,18 +12,11 @@
             "filename": "duped"
         },
         {
-            "id": "dd33d16a1017bda818bf3d13630f8fec1d245dd213c6d96a88a35bb6cf23d66b",
-            "filename": "6feaab726b268995568fdf9214d416191fecd1d5c2e3412e689bf7d8e52526c8.xlsx",
-            "username": "Unit-Testing.xlsx",
-            "budget": 6969,
-            "cycle_date": 17
-        },
-        {
             "id": "b7fc8374d65a306d68fee5402a0b257085c600114d22294e74d31f7924ea53eb",
-            "filename": "16e60644d25e8e80ff8f5f7e57b90d1372cea7037712f19836fdca6c81373118.xlsx",
-            "username": " protect the turtles.xlsx ",
-            "budget": "200",
-            "cycle_date": "17"
+            "filename": "2d296a97f4c0d443bc90c5c58626189925c56baf2181d01670b1322f26fdf97c.xlsx",
+            "username": " protect the turtles.xlsx",
+            "budget": 200,
+            "cycle_date": 18
         }
     ]
 }
