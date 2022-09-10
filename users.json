@@ -1,22 +1,25 @@
 {
     "users": [
         {
-            "id": "1fa6b8d986d9b9cd01bf36951815158bbde9f520c0567c835dfe34783d0a4231",
-            "filename": "Unit-Testing.xlsx",
-            "username": "Unit Tester",
-            "budget": 6969,
-            "cycle_date": 12
-        },
-        {
-            "id": "1fa6b8d986d9b9c001bf36951815158bbde9f520c0567c835dfe34783d0a4231",
-            "filename": "duped"
-        },
-        {
             "id": "b7fc8374d65a306d68fee5402a0b257085c600114d22294e74d31f7924ea53eb",
             "filename": "2d296a97f4c0d443bc90c5c58626189925c56baf2181d01670b1322f26fdf97c.xlsx",
             "username": " protect the turtles.xlsx",
             "budget": 200,
             "cycle_date": 18
+        },
+        {
+            "id": "dd33d16a1017bda818bf3d13630f8fec1d245dd213c6d96a88a35bb6cf23d66b",
+            "filename": "700b59d99ab43a14fe71132ac38436a13bc6f71a9480aa85ed5937b1fb243d63.xlsx",
+            "username": "Unit-Testing.xlsx",
+            "budget": 6969,
+            "cycle_date": 21
+        },
+        {
+            "id": "1fa6b8d986d9b9cd01bf36951815158bbde9f520c0567c835dfe34783d0a4231",
+            "filename": "e7db8645acbcbe7ba1a8003d99db032f45b0d58c3caafceb656698eebdd4d028.xlsx",
+            "username": "Unit Tester.xlsx",
+            "budget": 6969,
+            "cycle_date": 12
         }
     ]
 }

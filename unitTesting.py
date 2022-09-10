@@ -52,7 +52,7 @@ print(args.email)
 #TESTING EMAILING
 if args.email == 1:
     testingLog.logDebug("\n\n TESTING EMAIL FUNCTIONALITY \n\n")
-    testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "1234567890"))
+    testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "1234567890", "1234567890"))
     EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "1234567890")
 else:
     testingLog.logDebug("\n\n SKPPING EMAIL TESTS \n\n")
@@ -108,6 +108,6 @@ print(sha512(b"+11234567890").hexdigest())
 print(sha256(b"+11234567890").hexdigest())
 print(hash("+11234567890"))
 print(hash("+11234567890"))
-dataEntryScript.jsonIfy("1234567890", sha256(b"+11234567890"), "Unit Tester")
+dataEntryScript.jsonIfy("1234567890", sha256(b"+11234567890").hexdigest(), "Unit Tester")
 
 #dataEntryScript.makeJsonData(sha256(b"+17817750100").hexdigest(), "protect the turtles", 1700, 17)

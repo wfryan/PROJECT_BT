@@ -532,12 +532,12 @@ def makeTempJson(sheetP):
 
 
 def initJsonAccount(sender, un, billDate, budg):
-    fname = makeJsonData(sha256(sender.encode('utf-8')).hexdigest(), un, budg, billDate)
+    fname = makeJsonData(sender, sha256(sender.encode('utf-8')).hexdigest(), un, budg, billDate)
     sheetP = os.getenv("sheetpath") + fname
     makeTempJson(sheetP)
     handleTurn(sheetP)
 
-def makeJsonData(senderHash, un, budg, cycle):
+def makeJsonData(sender, senderHash, un, budg, cycle):
     listIds = []
     data = json.load(open('users.json', 'r'))
     if ".xlsx" not in un:
@@ -549,7 +549,7 @@ def makeJsonData(senderHash, un, budg, cycle):
         return data['users'][listIds.index(senderHash)]['filename']
         
     else:
-        word = ''.join(random.choice(string.ascii_letters) for i in range(26))
+        word = sender.join(random.choice(string.ascii_letters) for i in range(26))
         fn = sha256(word.encode('utf-8')).hexdigest() + ".xlsx"
         newUser = myClasses.User(senderHash, fn, un, int(budg), int(cycle))
         data['users'].append(newUser.__dict__)
@@ -562,14 +562,15 @@ def jsonIfy(sender, senderHash, un):
     p = os.getenv("sheetpath")
     sheetP = None
     if os.path.exists(p + sender + ".xlsx"):
-        sheetP = p = sender + ".xlsx"
+        sheetP = p + sender + ".xlsx"
     else:
         sheetP = p + "Budgeting-Finances" + sender + ".xlsx"
+    #print(sheetP)
     wb = load_workbook(sheetP, data_only=True)
     wst = wb["Template"]
     budg = wst["M1"].value
     cycleD = wst["N1"].value
-    fn = os.getenv("sheetpath") + makeJsonData(senderHash, un, budg, cycleD)
+    fn = os.getenv("sheetpath") + makeJsonData(sender, senderHash, un, budg, cycleD)
     wst['M1'] = None
     wst['N1'] = None
     wb.save(sheetP)
