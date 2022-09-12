@@ -9,15 +9,16 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 import hashlib
 from sendMsgs import sendUsgNotif
-from dataEntryScript import formatMsgJson, genOverviewJson, handleData, handleDataFromJson, handleTurn, initJsonAccount, initNewAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
+from dataEntryScript import formatMsgJson, genOverviewJson, handleDataFromJson
+from dataEntryScript import initJsonAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
 from dataEntryScript import turnOver
-from dataEntryScript import genOverview, sendSheet, changeDate, reHash
-import os, threading, time, platform
+from dataEntryScript import changeDate
+import os, threading, time
 import schedule
-from logging.handlers import TimedRotatingFileHandler
 
 load_dotenv()
 
+#handles the autmoatic cycledate turnover
 def updateCycle():
     while True:
         schedule.run_pending()
@@ -34,7 +35,7 @@ users = {
     str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
 
-
+#security stuff. could be improved upon
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
@@ -67,18 +68,24 @@ def sms_reply():
     msg = request.values.get('Body', None)
     sender = hashlib.sha256(request.values.get('From', None).encode('utf-8')).hexdigest()
     resp = MessagingResponse()
-    print(hash(sender[1:]))
+    #print(hash(sender[1:]))
+    #Here is where the message gets parsed and the data gets handled and sent where it needs to be
     if "|" in msg and "Init" not in msg:
+        #Handles a purchase
         handleDataFromJson(msg, sender)
         body = formatMsgJson(sender)
     elif "Overview" in msg:
+        #handles overview
         body = genOverviewJson(sender)
     elif "Init" in msg and len(msg) < 6:
+        #INIT HANDLING, wrong format
         body = "Incorrect Format\n Correct Format: Init : File Name : Billing Date : Budget "
     elif "Init"  in msg:
+        #INIT HANDLING, proper format
         temp = msg.split(":")
         body = initJsonAccount(request.values.get('From', None), temp[1][1:], temp[2][1:], temp[3][1:])
     elif "Change Date" in msg.title():
+        #Changes cycle date.
         if len(msg) > 14:
             temp = msg.split(" ")
             newDate = temp[len(temp)-1]
@@ -87,9 +94,11 @@ def sms_reply():
         else:
             body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
     elif "Refresh" in msg.title():
+        #Refreshes sum of total spent
         setupSumJson(sender)
         body = "Total spent recalculated: call overview to get an updated value"
     elif "Email" in msg and "@" in msg:
+        #Emails the sheet
         splits = msg.split(" ")
         addr = ""
         for i in range(len(splits)):
@@ -98,16 +107,22 @@ def sms_reply():
 
         body = sendSheetJson(addr, sender)
     elif "JSON" in msg:
+        #Jsonifys a preexisting account!
         splits = msg.split(":")
         jsonIfy(request.values.get('From', None)[2:], sender, splits[1])
         body = formatMsgJson(sender) + "\n\n" + genOverviewJson(sender)
     elif "Manual Override" in msg:
+        #Manual override for cycle date. should be a server side admin command based on its sole usecase
         if os.getenv("overrideCode") in msg:
             manualOverJson(sender)
             body = "Cycle override successful"
         else:
             body = "Contact Administrator"
     else:
+        #Defaults to last purchase as a response because this assumes the text came from an authorized user
+        # should switch into a conditional check
+        # sending last purchase or a program overview dependent on whether or not the user is authorized
+        #TODO make this conditional
         body = "Last Purchase: \n" + formatMsgJson(sender)
     resp.message(body)
     return str(resp)

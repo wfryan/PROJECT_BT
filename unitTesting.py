@@ -9,6 +9,7 @@ import threading
 import sendMsgs
 import argparse
 from time import sleep
+from datetime import date, timedelta
 
 load_dotenv()
 
@@ -28,7 +29,7 @@ dataEntryScript.initNewAccount("1234567890", 17, 6969)
 dataEntryScript.handleData("Mike's Apple | 25", "1234567890")
 dataEntryScript.handleData("Taza | 50", "1234567890")
 dataEntryScript.handleData("Chipotle | 25", "1234567890")
-dataEntryScript.handleData("Baja Blasted Vodka| 60", "1234567890")
+dataEntryScript.handleData("Baja Blasted Cola| 60", "1234567890")
 dataEntryScript.handleData("Fairlife IceCream | 4.59", "1234567890")
 testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
 testingLog.logInfo(dataEntryScript.formatMsg("1234567890"))
@@ -39,12 +40,23 @@ dataEntryScript.initJsonAccount("+10987654321", "Unit-Testing.xlsx", 17, 6969)
 dataEntryScript.handleDataFromJson("Mike's Apple | 25", sha256(b"+10987654321").hexdigest())
 dataEntryScript.handleDataFromJson("Taza | 50", sha256(b"+10987654321").hexdigest())
 dataEntryScript.handleDataFromJson("Chipotle | 25", sha256(b"+10987654321").hexdigest())
-dataEntryScript.handleDataFromJson("Baja Blasted Vodka| 60", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Baja Blasted Cola| 60", sha256(b"+10987654321").hexdigest())
 dataEntryScript.handleDataFromJson("Fairlife IceCream | 4.59", sha256(b"+10987654321").hexdigest())
-sleep(4)
 dataEntryScript.changeDateJson("09/21/2002", sha256(b"+10987654321").hexdigest())
 dataEntryScript.removeDupes(sheetP + dataEntryScript.getUser(sha256(b"+10987654321").hexdigest())['filename'])
 dataEntryScript.manualOverJson(sha256(b"+10987654321").hexdigest())
+print("Testing Turn Over With Date of Yesterday")
+dataEntryScript.changeDateJson((date.today() - timedelta(days = 1)).strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print((date.today() - timedelta(days = 1)).strftime("%m/%d/%Y"))
+print("\nChanging Json Date to today")
+print(date.today().strftime("%m/%d/%Y"))
+dataEntryScript.changeDateJson(date.today().strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print("\nChanging Json Date to tmrw")
+dataEntryScript.changeDateJson((date.today() + timedelta(days = 1)).strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print((date.today() + timedelta(days = 1)).strftime("%m/%d/%Y"))
 
 
 
@@ -56,6 +68,7 @@ if args.email == 1:
     EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "1234567890")
 else:
     testingLog.logDebug("\n\n SKPPING EMAIL TESTS \n\n")
+
 #TESTING SETUP SUM
 testingLog.logDebug("\n\n\tTESTING SUM CORRECTION\t\n\n")
 dataEntryScript.setupSum("1234567890")

@@ -17,6 +17,8 @@ priceLoc = 'B'
 minRow = '2'
 
 myLog = myLogger("Automation-Logger", 10, "Event-Log" )
+
+#Handles changeing of the date: being deprecated
 def changeDate(newDate, sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -33,23 +35,26 @@ def changeDate(newDate, sender):
     wb.save(sheetP)
     wb.close()
 
+#Handles changing of the date with the json refactor
 def changeDateJson(newDate, senderHash):
     user = getUser(senderHash)
-    data = json.load(open('users.json', 'r'))
-    day = newDate.split("/")[1]
+    if "User does not exist" not in user:
+        data = json.load(open('users.json', 'r'))
+        day = newDate.split("/")[1]
 
-    for x in data['users']:
-        print(x['id'])
-        if x['id'] == user['id']:
+        for x in data['users']:
             print(x['id'])
-            data['users'][data['users'].index(x)]['cycle_date'] = int(day)
-            break
+            if x['id'] == user['id']:
+                print(x['id'])
+                data['users'][data['users'].index(x)]['cycle_date'] = int(day)
+                break
 
-    json.dump(data, open('temp.json', 'w'), indent = 4)
-    os.rename('temp.json', 'users.json')
+        json.dump(data, open('temp.json', 'w'), indent = 4)
+        os.rename('temp.json', 'users.json')
+    else:
+        myLog.logInfo("User not found")
 
-
-
+#makes template sheet in the workbook. Being deprecated
 def makeTemplate(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender) + ".xlsx"
@@ -64,6 +69,7 @@ def makeTemplate(sender):
     wb.close()
     print(sender)
 
+#makes template sheet in the workbook. JSON refactored
 def makeTemplateJson(senderHash):
     user = getUser(senderHash)
     sheetP = os.getenv("sheetpath") + user['filename']
@@ -78,6 +84,7 @@ def makeTemplateJson(senderHash):
     wb.close()
     print(user['username'])
 
+#Removes duplicate sheets from the workbook
 def removeDupes(sheetP):
     wb = load_workbook(sheetP, data_only=True)
     wsnL = []
@@ -100,6 +107,7 @@ def removeDupes(sheetP):
     wb.save(sheetP)
     wb.close()
 
+#Manual Override the cycle turnover, being deprecated
 def manualOverride(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender) + ".xlsx"
@@ -111,6 +119,7 @@ def manualOverride(sender):
         handleTurn(sheetP)
         removeDupes(sheetP)
 
+#Manual Override the cycle turnover, JSON Refactored
 def manualOverJson(sendHash):
     sheetP = os.getenv("sheetpath") + getUser(sendHash)['filename']
     if "User not found" in sheetP and not os.path.exists(sheetP):
@@ -119,8 +128,7 @@ def manualOverJson(sendHash):
         handleTurn(sheetP)
         removeDupes(sheetP)
 
-
-
+#Handles the turning over an individual sheet
 def handleTurn(sheetP):
     wb = None
     if os.path.exists(sheetP):
@@ -158,6 +166,8 @@ def handleTurn(sheetP):
     else:
         wb.save(sheetP)
         wb.close()
+
+#Runs automatically at 3am. Checks and turns over every sheet. Accounts for old structure and JSON refactor
 def turnOver():
     fldrP = os.getenv("fldr")
     listSheets = os.listdir(fldrP)
@@ -180,11 +190,13 @@ def turnOver():
             if int(date.today().day) == int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
+                print(filenme)
                 #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
                 handleTurn(filenme)
                 print("New Cycle, sheet has turned over")
+                print(filenme)
                 #mylog.logInfo("New Cycle, sheet has turned over")
                 removeDupes(filenme)
             else:
@@ -193,7 +205,8 @@ def turnOver():
         else:
             pass
             #mylog.logInfo("Not a file")"""
-         
+
+#Written, tested, and deprectaed before deployed       
 def reHash(sender):
     fldrP = os.getenv("fldr")
     listSheets = os.listdir(fldrP)
@@ -226,6 +239,7 @@ def reHash(sender):
             pass
             #mylog.logInfo("Not a file")"""
 
+#Calculates the sum of the total spent. Being deprecated
 def setupSum(sender):
     wb = None
     sheetP = os.getenv("sheetpath")
@@ -251,7 +265,9 @@ def setupSum(sender):
     wb.save(sheetP)
     wb.close()
     myLog.logInfo("Sum calculated")
-    
+
+#Handles making a purchase. Being deprecated
+# Also runs a check to see if the cycle didn't turn over properly    
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
@@ -297,6 +313,7 @@ def handleData(text, sender):
     wb.save(sheetP)
     wb.close()
 
+#Generates an overview of purchases made this month. Being deprecated
 def genOverview(sender):
     msg = ""
     sheetP = os.getenv("sheetpath")
@@ -333,6 +350,7 @@ def genOverview(sender):
     msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+#Formats a msg containing the last purchase, total spent, total remaining, being deprecated
 def formatMsg(sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(sender) + ".xlsx"
@@ -366,6 +384,7 @@ def formatMsg(sender):
         msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+#Formats a msg containing the last purchase, total spent, total remaining. JSON refactored
 def formatMsgJson(senderHash):
     user = getUser(senderHash)
     sheetP = os.getenv("sheetpath") + user['filename']
@@ -400,6 +419,7 @@ def formatMsgJson(senderHash):
         msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+#Handles account creation through text. Being deprecated
 def initNewAccount(sender, billDate, budgCap):
     sheetP = os.getenv("sheetpath")
     makeTemplate(sender)
@@ -413,6 +433,7 @@ def initNewAccount(sender, billDate, budgCap):
     wb.close()
     return ("Sheet Made: use format \nItem | Price\n to add an item")
 
+#Generates an overview of purchases made this month. JSON Refactored
 def genOverviewJson(senderHash):
     msg = ""
     user = getUser(senderHash)
@@ -450,6 +471,7 @@ def genOverviewJson(senderHash):
     msg+= "\nTotal Remaining ($USD): " + str(totalRemaining)
     return msg
 
+#Calculates the sum of the total spent in the month/ JSON Refactored
 def setupSumJson(sendHash):
     wb = None
     user = getUser(sendHash)
@@ -475,8 +497,9 @@ def setupSumJson(sendHash):
     wb.close()
     myLog.logInfo("Sum calculated")
 
+#Handles making a purchase. JSON Refactored
+# Also runs a check to see if the cycle didn't turn over properly    
 def handleDataFromJson(text, sender):
-    #billDate = os.getenv("billDate")
     user = getUser(sender)
     sheetP = os.getenv("sheetpath") + user['filename']
     vals = text.split('|')
@@ -488,7 +511,6 @@ def handleDataFromJson(text, sender):
             handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
 
-        #print(date.today().day)
     else:
         handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
@@ -519,6 +541,7 @@ def handleDataFromJson(text, sender):
     wb.close()
     del user
 
+#makes template sheet in the workbook. JSON Refactored
 def makeTempJson(sheetP):
     wb = Workbook()
     wsTemp = wb.create_sheet("Template")
@@ -530,13 +553,14 @@ def makeTempJson(sheetP):
     wb.save(sheetP)
     wb.close()
 
-
+#Handles account creation through text. JSON Refactored
 def initJsonAccount(sender, un, billDate, budg):
     fname = makeJsonData(sender, sha256(sender.encode('utf-8')).hexdigest(), un, budg, billDate)
     sheetP = os.getenv("sheetpath") + fname
     makeTempJson(sheetP)
     handleTurn(sheetP)
 
+#Adds user to the json data structure. Useful for backend management and helps with privacy a bit more
 def makeJsonData(sender, senderHash, un, budg, cycle):
     listIds = []
     data = json.load(open('users.json', 'r'))
@@ -558,6 +582,7 @@ def makeJsonData(sender, senderHash, un, budg, cycle):
         print("writing json")
         return fn
 
+#Translates a preexisting account to use the new json structure
 def jsonIfy(sender, senderHash, un):
     p = os.getenv("sheetpath")
     sheetP = None
@@ -577,9 +602,9 @@ def jsonIfy(sender, senderHash, un):
     wb.close()
     os.rename(sheetP, fn)
     print(genOverviewJson(senderHash))
-    
-    print("hello")
 
+
+#Gets user based off hash id
 def getUser(sendHash):
     data = json.load(open('users.json', 'r'))
     y = None
@@ -592,9 +617,7 @@ def getUser(sendHash):
 
     return y
             
-    
-
-
+#Emails sheet, being deprecated
 def sendSheet(addr, filenme, sender):
     sheetP = os.getenv("sheetpath")
     sheetP = sheetP + str(filenme) + ".xlsx"
@@ -606,6 +629,7 @@ def sendSheet(addr, filenme, sender):
         myLog.logInfo("File not found, please generate a spreadsheet to email it to someone")
         return("File not found, please generate a spreadsheet to email it to someone")
 
+#Emails sheet, JSON Refactored
 def sendSheetJson(addr, senderHash):
     user = getUser(senderHash)
     sheetP = os.getenv("sheetpath") + user['filename']
