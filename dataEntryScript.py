@@ -616,7 +616,15 @@ def getUser(sendHash):
         y = "User does not exist!"
 
     return y
-            
+
+def checkAuthUser(sendHash):
+    data = json.load(open('users.json', 'r'))
+    for x in data['users']:
+        if x['id'] == sendHash:
+            return True
+        
+    return False
+
 #Emails sheet, being deprecated
 def sendSheet(addr, filenme, sender):
     sheetP = os.getenv("sheetpath")

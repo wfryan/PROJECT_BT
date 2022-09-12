@@ -8,11 +8,9 @@ from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
 import hashlib
-from sendMsgs import sendUsgNotif
-from dataEntryScript import formatMsgJson, genOverviewJson, handleDataFromJson
+from dataEntryScript import changeDateJson, checkAuthUser, formatMsgJson, genOverviewJson, handleDataFromJson
 from dataEntryScript import initJsonAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
 from dataEntryScript import turnOver
-from dataEntryScript import changeDate
 import os, threading, time
 import schedule
 
@@ -42,10 +40,6 @@ def verify_password(username, password):
             check_password_hash(users.get(username), password):
         return username
     #print(request.values.get('From', None))
-    if request.values.get('From', None) in os.getenv("authNumbers"):
-        app.logger.warning("Message Sent from Authorized Number")
-    else:
-     app.logger.warning("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)
@@ -89,7 +83,7 @@ def sms_reply():
         if len(msg) > 14:
             temp = msg.split(" ")
             newDate = temp[len(temp)-1]
-            changeDate(newDate, sender)
+            changeDateJson(newDate, sender)
             body = "Budget Date Changed to: " + newDate
         else:
             body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
@@ -123,7 +117,16 @@ def sms_reply():
         # should switch into a conditional check
         # sending last purchase or a program overview dependent on whether or not the user is authorized
         #TODO make this conditional
-        body = "Last Purchase: \n" + formatMsgJson(sender)
+        if checkAuthUser(sender):
+            app.logger.warning("Message Sent from Authorized Number")
+            body = "Last Purchase: \n" + formatMsgJson(sender)
+        else:
+            app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
+            body = "Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!\n"
+            body+= "The format should be Init : your filename : your billing day : your budget cap\n"
+            body+= "\nBilling day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21\n"
+            body+= "Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!\n"
+        
     resp.message(body)
     return str(resp)
 
