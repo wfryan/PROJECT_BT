@@ -93,7 +93,7 @@ def removeDupes(sheetP):
             wsnL.append(sheetN)
         if str(date.today()) in sheetN and len(sheetN) > len(str(date.today())):
             wsnL.append(sheetN)
-    
+
     for sheetN in wsnL:
         wb.remove(wb[sheetN])
 
@@ -136,13 +136,13 @@ def handleTurn(sheetP):
     else:
         #makeTemplate(sender)
         wb = load_workbook(sheetP, data_only=True)
-    
+
     if "Template Copy" in wb.sheetnames:
         wb.remove(wb["Template Copy"])
 
     if str(date.today()) + "1" in wb.sheetnames:
         wb.remove(wb[str(date.today()) + "1"])
-     
+
     if "Template" in wb.sheetnames:
         ws = wb["Template"]
         temp = wb.copy_worksheet(ws)
@@ -206,7 +206,7 @@ def turnOver():
             pass
             #mylog.logInfo("Not a file")"""
 
-#Written, tested, and deprectaed before deployed       
+#Written, tested, and deprectaed before deployed
 def reHash(sender):
     fldrP = os.getenv("fldr")
     listSheets = os.listdir(fldrP)
@@ -267,7 +267,7 @@ def setupSum(sender):
     myLog.logInfo("Sum calculated")
 
 #Handles making a purchase. Being deprecated
-# Also runs a check to see if the cycle didn't turn over properly    
+# Also runs a check to see if the cycle didn't turn over properly
 def handleData(text, sender):
     #billDate = os.getenv("billDate")
     sheetP = os.getenv("sheetpath")
@@ -287,7 +287,7 @@ def handleData(text, sender):
     else:
         handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
-        
+
     ws = wb[wb.sheetnames[0]]
     if ws['G1'].value == None:
         wb.save(sheetP)
@@ -388,7 +388,7 @@ def formatMsg(sender):
 def formatMsgJson(senderHash):
     user = getUser(senderHash)
     sheetP = os.getenv("sheetpath") + user['filename']
-    
+
     wb = None
     if os.path.exists(sheetP):
         wb = load_workbook(sheetP, data_only=True)
@@ -498,7 +498,7 @@ def setupSumJson(sendHash):
     myLog.logInfo("Sum calculated")
 
 #Handles making a purchase. JSON Refactored
-# Also runs a check to see if the cycle didn't turn over properly    
+# Also runs a check to see if the cycle didn't turn over properly
 def handleDataFromJson(text, sender):
     user = getUser(sender)
     sheetP = os.getenv("sheetpath") + user['filename']
@@ -514,7 +514,7 @@ def handleDataFromJson(text, sender):
     else:
         handleTurn(sheetP)
         wb = load_workbook(sheetP, data_only=True)
-        
+
     ws = wb[wb.sheetnames[0]]
     if ws['G1'].value == None:
         wb.save(sheetP)
@@ -566,12 +566,12 @@ def makeJsonData(sender, senderHash, un, budg, cycle):
     data = json.load(open('users.json', 'r'))
     if ".xlsx" not in un:
         un+= ".xlsx"
-    
+
     for x in data['users']:
         listIds.append(x['id'])
     if senderHash in listIds:
         return data['users'][listIds.index(senderHash)]['filename']
-        
+
     else:
         word = sender.join(random.choice(string.ascii_letters) for i in range(26))
         fn = sha256(word.encode('utf-8')).hexdigest() + ".xlsx"
@@ -619,11 +619,12 @@ def getUser(sendHash):
 
 def checkAuthUser(sendHash):
     data = json.load(open('users.json', 'r'))
+    val = False
     for x in data['users']:
         if x['id'] == sendHash:
-            return True
-        
-    return False
+            val = True
+
+    return val
 
 #Emails sheet, being deprecated
 def sendSheet(addr, filenme, sender):
