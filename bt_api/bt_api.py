@@ -1,7 +1,10 @@
 import os
 import json
 import hashlib
+import re
 import time
+
+import bt_exception
 
 from base64 import b64encode
 from base64 import b64decode
@@ -13,49 +16,33 @@ from Crypto.Random import get_random_bytes
 
 from datetime import date, datetime
 
-from flask import Flask
-from flask_restful import Resource, Api, reqparse
+from pathlib import Path
 
 GLOB_KEY = Fernet.generate_key()
 fernet = Fernet(GLOB_KEY)
 
 class bt_database():
-    users_file_path = f"{os.getcwd()}/bt_database/bt_user_database.json"
-    transactions_file_path = f"{os.getcwd()}/bt_database/bt_transaction_database.json"
+    bt_database_path = os.getenv('BT_DATABASE_PATH')
+    users_file_path = f"{bt_database_path}/bt_user_database.json"
+    transactions_file_path = f"{bt_database_path}/bt_transaction_database.json"
+    if not os.path.exists(bt_database_path):
+        os.makedirs(bt_database_path)
     if not os.path.exists(users_file_path):
-            open(users_file_path, 'w')
+            Path(users_file_path).touch()
     if not os.path.exists(transactions_file_path):
-            open(transactions_file_path, 'w')
-    # Getters #
+            Path(transactions_file_path).touch()
+
     @classmethod
     def get_user_data(cls, user_id):
-        try:
-            return json.load(open(cls.users_file_path, 'r'))[user_id]
-        except:
-            return None
+        return json.load(open(cls.users_file_path, 'r'))[user_id]
 
     @classmethod
-    def get_users_transactions(cls, user_id, transaction_id=None, from_date=None, to_date=None):
+    def get_users_transactions(cls, user_id):
         try:
-            users_transactions = json.load(open(cls.transactions_file_path, 'r'))[user_id]
+            return json.load(open(cls.transactions_file_path, 'r')).get(user_id)
         except:
-            return None
+            return {}
 
-        if transaction_id:
-            return users_transactions[f"{transaction_id}"]
-
-        from_date = date.min if not from_date else from_date
-        to_date = date.max if not to_date else to_date
-
-        filtered_users_transactions = []
-        for transaction in users_transactions.values():
-            transaction_date = datetime.strptime(transaction['date'], "%Y-%m-%d").date()
-            if transaction_date > from_date and transaction_date < to_date:
-                filtered_users_transactions.append(transaction)
-
-        return filtered_users_transactions
-
-    # Writers #
     @classmethod
     def add_user(cls, user_id, user_data):
         with open(cls.users_file_path, 'r+') as users_file:
@@ -66,6 +53,7 @@ class bt_database():
             users_dict[user_id] = user_data
             users_file.seek(0)
             json.dump(users_dict, users_file, indent = 4)
+        cls.add_transactions(user_id, {})
 
     @classmethod
     def add_transactions(cls, user_id, new_transactions):
@@ -76,12 +64,85 @@ class bt_database():
                 transactions_dict = {}
             if not transactions_dict.get(user_id):
                 transactions_dict[user_id] = {}
-            for transaction in new_transactions:
-                transactions_dict[user_id][transaction] = new_transactions[transaction]
+            for transaction_id in new_transactions:
+                transactions_dict[user_id][transaction_id] = new_transactions[transaction_id]
             transactions_file.seek(0)
             json.dump(transactions_dict, transactions_file, indent = 4)
 
+    @classmethod
+    def get_single_transaction(self, user_id, transaction_id): # Get a single transaction by transaction_id
+        try:
+            return bt_database.get_users_transactions(user_id)['transaction_id']
+        except KeyError:
+            raise bt_exception.bt_input_error(f"Transaction with id {transaction_id} does not exist")
+
+    @classmethod
+    def get_filtered_transactions(self, user_id, start_date=None, end_date=None): # Get transactions
+        # Get all users transactions from file
+        users_transactions = bt_database.get_users_transactions(user_id)
+
+        from_date = datetime.strptime(start_date, "%Y-%m-%d").date() if start_date else date.min
+        to_date = datetime.strptime(end_date, "%Y-%m-%d").date() if end_date else date.max
+
+        filtered_transactions = {}
+        for transaction in users_transactions.values():
+            transaction_date = datetime.strptime(transaction['date'], "%Y-%m-%d").date()
+            if transaction_date > from_date and transaction_date < to_date:
+                filtered_transactions[transaction['transaction_id']] = transaction
+
+        return filtered_transactions
+
+    @classmethod
+    def create_transactions(self, user_id, transactions): # Create transactions
+        users_transactions = bt_database.get_users_transactions(user_id)
+        new_transactions = {}
+        num_duplicate_transactions = 0
+        for input_transaction in transactions:
+            new_transaction = {}
+            # Input Data Checks
+            if transaction_date := input_transaction.get('date'):
+                try:
+                    transaction_date = datetime.strptime(transaction_date, "%Y-%m-%d")
+                    new_transaction['date'] = transaction_date
+                except:
+                    raise bt_exception.bt_input_error("Date must be formatted YYYY-MM-DD")
+            else:
+                raise bt_exception.bt_input_error("'date' field is required")
+
+            if transaction_amount := input_transaction.get('amount'):
+                try:
+                    new_transaction['amount'] = float(transaction_amount)
+                except:
+                    raise bt_exception.bt_input_error("'amount' cannot be negative")
+            else:
+                raise bt_exception.bt_input_error("'amount' field is required")
+
+            if transaction_merchant := input_transaction.get('merchant'):
+                new_transaction['merchant'] = transaction_merchant
+
+            if transaction_description := input_transaction.get('description'):
+                new_transaction['description'] = transaction_description
+
+            # Create transaction id
+            prehash_id = ''
+            for value in new_transaction.values():
+                prehash_id = prehash_id + str(value)
+            transaction_id = int((hashlib.sha1(prehash_id.encode('utf-8'))).hexdigest(), 16) % (10**10)
+            if users_transactions.get(transaction_id):
+                num_duplicate_transactions += 1
+                continue
+
+            # Add transaction id to transaction and add transaction to new_transactions
+            new_transaction['transaction_id'] = transaction_id
+            new_transactions[transaction_id] = new_transaction
+
+        if not (num_new_transactions := len(new_transactions)) == 0:
+            bt_database.add_transactions(user_id, new_transactions)
+
+        return num_new_transactions, num_duplicate_transactions
+
 class bt_auth():
+
     @classmethod
     def do_hash(cls, password, salt=None):
         if not salt:
@@ -89,6 +150,12 @@ class bt_auth():
         byte_password = password.encode('utf-8')
         key = PBKDF2(byte_password, salt, 64, count=1000000, hmac_hash_module=SHA512)
         return key, salt
+
+    @classmethod
+    def check_user_hash(cls, user_key, user_salt, user_password):
+        saved_hash = b64decode(user_key.encode('utf-8'))
+        salt = b64decode(user_salt.encode('utf-8'))
+        return True if saved_hash == cls.do_hash(user_password, salt)[0] else False
 
     @classmethod
     def encrypt_glob(cls, glob_dict):
@@ -116,7 +183,7 @@ class bt_auth():
     @classmethod
     def check_auth_glob(cls, enc_glob_string):
         if type(enc_glob_string).__name__ != 'str':
-            return None
+            raise bt_exception.bt_input_error("auth_glob improper format")
         glob_dict = cls.decrypt_glob(enc_glob_string)
 
         now = time.time()
@@ -126,151 +193,55 @@ class bt_auth():
         is_decaying = (valid_until_time - now) < 1800
 
         if is_dead:
-            return None
+            raise bt_exception.bt_auth_error("auth_glob is expired")
         if is_decaying:
             glob_dict = cls.get_auth_glob(glob_dict['email'])
 
-        return cls.encrypt_glob(glob_dict)
+        user_id = glob_dict['user_id']
+        return user_id, cls.encrypt_glob(glob_dict)
 
     @classmethod
-    def get_user_id(cls, email=None, glob=None):
-        if email:
-            return hashlib.sha256(email.encode("utf-8")).hexdigest()[:32]
-        elif glob:
-            return cls.decrypt_glob(glob)['user_id']
-        else:
-            return None
+    def get_user_id(cls, email=None):
+        return hashlib.sha256(email.encode("utf-8")).hexdigest()[:32]
 
-class user(Resource):
-
-    def get(self): # Login User
-        parser = reqparse.RequestParser()
-        parser.add_argument('email', required=True)
-        parser.add_argument('password', required=True)
-        args = parser.parse_args()
-
+    @classmethod
+    def user_login(self, email, password): # Return auth_glob to authenticate further requests
         # Get user ID
-        user_id = bt_auth.get_user_id(args['email'])
+        user_id = bt_auth.get_user_id(email)
 
-        # Check if user exists, and get data if they do
+        # Check if user exists, get data if they do, or throw exception if they don't
         if not (user_data := bt_database.get_user_data(user_id)):
-            return {'message':f"Email and password do not match"}, 401
+            raise bt_exception.bt_auth_error("User does not exist")
 
-        saved_hash = b64decode(user_data['key'].encode('utf-8'))
-        salt = b64decode(user_data['salt'].encode('utf-8'))
-        check_hash = bt_auth.do_hash(args['password'], salt)[0]
-
-        if saved_hash == check_hash:
-            auth_glob = bt_auth.get_auth_glob(user_id)
-            return {"auth_glob": auth_glob}, 200
+        # Check if given password matches hash at user_id
+        if bt_auth.check_user_hash(user_key=user_data['key'], user_salt=user_data['salt'], user_password=password):
+            return bt_auth.get_auth_glob(user_id)
         else:
-            return {'message':f"Email and password do not match"}, 401
+            raise bt_exception.bt_auth_error("Incorrect email or password")
 
-    def post(self): # Create New User
-        parser = reqparse.RequestParser()
-        parser.add_argument('email', required=True)
-        parser.add_argument('password', required=True)
-        args = parser.parse_args()
+    @classmethod
+    def create_user(self, email, password): # Init new user
+        # Check if valid email
+        email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if not re.fullmatch(email_regex, email):
+            raise bt_exception.bt_input_error("Email is not valid email address")
 
         # Get user id
-        user_id = bt_auth.get_user_id(args['email'])
+        user_id = bt_auth.get_user_id(email)
 
         # Make sure user does not yet exist
         if bt_database.get_user_data(user_id):
-            return {'message':"User already exists"}, 409
+            raise bt_exception.bt_conflict_error("User already exists")
 
         # Get new user auth data
-        key, salt = bt_auth.do_hash(args['password'])
+        key, salt = bt_auth.do_hash(password)
 
         # Init new user sub dict
         new_user_data = {
-            "email": args['email'],
+            "email": email,
             "key": b64encode(key).decode('utf-8'),
             "salt": b64encode(salt).decode('utf-8')
         }
 
         # Add new user to main users file, and init them in the transactions file
         bt_database.add_user(user_id, new_user_data)
-
-        return 201
-
-
-class transactions(Resource):
-    def get(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('auth_glob', required=True)
-        parser.add_argument('transaction_id', required=False)
-        # Dates are strings in YYYY-MM-DD ("%Y-%m-%d") format
-        parser.add_argument('start', required=False)
-        parser.add_argument('end', required=False)
-        args = parser.parse_args()
-
-        if auth_glob := bt_auth.check_auth_glob(args['auth_glob']):
-            user_id = bt_auth.get_user_id(glob=auth_glob)
-        else:
-            return {'message':"Auth Glob is unauthorized"}, 401
-
-        # Get transaction by id
-        if transaction_id := args['transaction_id']:
-            if transaction := bt_database.get_users_transactions(user_id, transaction_id=transaction_id):
-                user_transactions = [transaction]
-            else:
-                return {'message':f"Transaction with {transaction_id} does not exist"}, 404
-        # Get transactions in range
-        else:
-            from_datestring = args.get('start')
-            to_datestring = args.get('end')
-
-            from_date = datetime.strptime(from_datestring, "%Y-%m-%d").date() if from_datestring else None
-            to_date = datetime.strptime(to_datestring, "%Y-%m-%d").date() if to_datestring else None
-            user_transactions = bt_database.get_users_transactions(user_id, from_date=from_date, to_date=to_date)
-
-        return {'transactions': user_transactions, 'auth_glob': auth_glob}, 200
-
-    def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('auth_glob', required=True)
-        parser.add_argument('transactions', required=True)
-        args = parser.parse_args()
-
-        if auth_glob := bt_auth.check_auth_glob(args['auth_glob']):
-            user_id = bt_auth.get_user_id(glob=auth_glob)
-        else:
-            return {'message':"Auth Glob is unauthorized"}, 401
-
-        transactions_to_create = json.loads(args['transactions'])['transactions']
-        new_transactions = {}
-        for new_transaction in transactions_to_create:
-            # Input Data Checks
-            if not new_transaction['date'] or not new_transaction['amount']:
-                return { 'message':"Transactions require date and amount fields minimum"}, 400
-            try:
-                datetime.strptime(new_transaction['date'], "%Y-%m-%d")
-            except:
-                return { 'message':"Date must be formatted YYYY-MM-DD"}, 400
-
-            # Create transaction id
-            prehash_id = f"{new_transaction['date']}{new_transaction['amount']}"
-            transaction_id = int((hashlib.sha1(prehash_id.encode('utf-8'))).hexdigest(), 16) % (10**10)
-            if bt_database.get_users_transactions(user_id, transaction_id=transaction_id):
-                continue
-                return { 'message':"A collision occurred, please try again, if this happens more than once, there is a duplicate transaction"}, 500
-
-            # Add transaction id to transaction and add transaction to new_transactions
-            new_transaction['transaction_id'] = transaction_id
-            new_transactions[transaction_id] = new_transaction
-
-        if len(new_transactions) == 0:
-            return {'message':"No transactions to create"}, 400
-        bt_database.add_transactions(user_id, new_transactions)
-
-        return {'created_transactions': new_transactions, 'auth_glob': auth_glob}, 201
-
-app = Flask(__name__)
-api = Api(app)
-
-api.add_resource(transactions, '/transactions')
-api.add_resource(user, '/user')
-
-if __name__ == '__main__':
-    app.run()
