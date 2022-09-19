@@ -13,7 +13,7 @@ class ingestDataError(Exception):
 class btApiTestError(Exception):
     pass
 
-bt_api_base_url = f"http://127.0.0.1:5000"
+bt_api_base_url = f"http://home.arcticridge.net:5000"
 
 def create_user(email, password):
     url = f"{bt_api_base_url}/user"
@@ -33,11 +33,10 @@ def login(email, password):
     else:
         raise btApiTestError(f"ERROR: Cannot login: {response.reason}")
 
-def create_transactions(auth_glob, transactions_dict):
+def create_transactions(auth_glob, transactions_list):
     url = f"{bt_api_base_url}/transactions"
     data = {
-
-        "transactions": json.dumps(transactions_dict)
+        "transactions": json.dumps(transactions_list)
     }
     headers = {
         "auth_glob": auth_glob,
@@ -46,7 +45,7 @@ def create_transactions(auth_glob, transactions_dict):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()['Created Transactions'], response.headers['auth_glob']
     else:
-        raise btApiTestError(f"ERROR: Could not create transactions: {response.reason}")
+        raise btApiTestError(f"ERROR: Could not create transactions: {response.text}")
 
 def get_transactions(auth_glob, start_date, end_date):
     url = f"{bt_api_base_url}/transactions"
@@ -103,7 +102,7 @@ def get_files(transactionfolder):
         transaction_files.append(f"{transactionfolder}/{file}")
     return transaction_files
 
-def add_transactions(transaction_file, transactions_dict):
+def add_transactions(transaction_file, transactions_list):
     file_data = csv.DictReader(open(transaction_file, 'r'))
     date_format, data_translator = get_card_map(file_data.fieldnames)
     for row in file_data:
@@ -115,7 +114,8 @@ def add_transactions(transaction_file, transactions_dict):
                     column_data = datetime.strftime(datetime.strptime(column_data, date_format), "%Y-%m-%d")
 
                 temp_transaction[new_column_name] = column_data
-        transactions_dict['transactions'].append(temp_transaction)
+        if float(temp_transaction['amount']) >= 0:
+            transactions_list.append(temp_transaction)
 
 def args_check(args):
     if not args.transactionfolder:
@@ -137,10 +137,7 @@ def main():
 
     transaction_files = get_files(args.transactionfolder)
 
-    transactions = {
-        "transactions": [
-        ]
-    }
+    transactions = []
     for file in transaction_files:
         add_transactions(file, transactions)
 
@@ -159,9 +156,7 @@ def main():
     transactions, auth_glob = get_transactions(auth_glob, "2022-01-01", "2022-09-17")
     sum = 0
     for transaction in transactions.values():
-        if not transaction['type'] == 'Payment':
-            sum += transaction['amount']
-            print(transaction['amount'])
+        sum += transaction['amount']
     print(sum)
 if __name__ == "__main__":
     main()
