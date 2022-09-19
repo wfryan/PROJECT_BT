@@ -1,8 +1,9 @@
 .env
 /sheets
-/__pycache__
+__pycache__/
 /logs
 .DS_Store
 testingJsonImp.py
 nolooky.txt
 bt_database/*
+.vscode/
