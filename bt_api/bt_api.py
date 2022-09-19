@@ -27,10 +27,21 @@ class bt_database():
     transactions_file_path = f"{bt_database_path}/bt_transaction_database.json"
     if not os.path.exists(bt_database_path):
         os.makedirs(bt_database_path)
-    if not os.path.exists(users_file_path):
-            Path(users_file_path).touch()
-    if not os.path.exists(transactions_file_path):
-            Path(transactions_file_path).touch()
+
+    try:
+        json.load(open(users_file_path, 'r'))
+    except:
+        open(users_file_path, 'w').write("{}")
+    try:
+        json.load(open(transactions_file_path, 'r'))
+    except:
+        open(transactions_file_path, 'w').write("{}")
+
+    @classmethod
+    def does_user_exist(cls, user_id):
+        if json.load(open(cls.users_file_path, 'r')).get(user_id):
+            return True
+        return False
 
     @classmethod
     def get_user_data(cls, user_id):
@@ -38,10 +49,7 @@ class bt_database():
 
     @classmethod
     def get_users_transactions(cls, user_id):
-        try:
-            return json.load(open(cls.transactions_file_path, 'r')).get(user_id)
-        except:
-            return {}
+        return json.load(open(cls.transactions_file_path, 'r'))[user_id]
 
     @classmethod
     def add_user(cls, user_id, user_data):
@@ -102,20 +110,20 @@ class bt_database():
             # Input Data Checks
             if transaction_date := input_transaction.get('date'):
                 try:
-                    transaction_date = datetime.strptime(transaction_date, "%Y-%m-%d")
+                    datetime.strptime(transaction_date, "%Y-%m-%d")
                     new_transaction['date'] = transaction_date
                 except:
                     raise bt_exception.bt_input_error("Date must be formatted YYYY-MM-DD")
             else:
                 raise bt_exception.bt_input_error("'date' field is required")
 
-            if transaction_amount := input_transaction.get('amount'):
-                try:
-                    new_transaction['amount'] = float(transaction_amount)
-                except:
-                    raise bt_exception.bt_input_error("'amount' cannot be negative")
-            else:
-                raise bt_exception.bt_input_error("'amount' field is required")
+            try:
+                if (transaction_amount := float(input_transaction['amount'])) >= 0:
+                    new_transaction['amount'] = transaction_amount
+                else:
+                    raise bt_exception.bt_input_error()
+            except:
+                raise bt_exception.bt_input_error("A positive float 'amount' field is required")
 
             if transaction_merchant := input_transaction.get('merchant'):
                 new_transaction['merchant'] = transaction_merchant
@@ -128,7 +136,7 @@ class bt_database():
             for value in new_transaction.values():
                 prehash_id = prehash_id + str(value)
             transaction_id = int((hashlib.sha1(prehash_id.encode('utf-8'))).hexdigest(), 16) % (10**10)
-            if users_transactions.get(transaction_id):
+            if users_transactions.get(str(transaction_id)):
                 num_duplicate_transactions += 1
                 continue
 
@@ -166,9 +174,7 @@ class bt_auth():
 
     @classmethod
     def decrypt_glob(cls, enc_glob_string):
-        glob_string = fernet.decrypt(enc_glob_string).decode()
-        glob_dict = json.loads(glob_string)
-        return glob_dict
+        return json.loads(fernet.decrypt(bytes(enc_glob_string, 'utf-8')).decode())
 
     @classmethod
     def get_auth_glob(cls, user_id):
@@ -209,10 +215,11 @@ class bt_auth():
         # Get user ID
         user_id = bt_auth.get_user_id(email)
 
-        # Check if user exists, get data if they do, or throw exception if they don't
-        if not (user_data := bt_database.get_user_data(user_id)):
+        # Check if user exists, throw exception if they don't
+        if not bt_database.does_user_exist(user_id):
             raise bt_exception.bt_auth_error("User does not exist")
-
+        # Get users data
+        user_data = bt_database.get_user_data(user_id)
         # Check if given password matches hash at user_id
         if bt_auth.check_user_hash(user_key=user_data['key'], user_salt=user_data['salt'], user_password=password):
             return bt_auth.get_auth_glob(user_id)
@@ -230,7 +237,7 @@ class bt_auth():
         user_id = bt_auth.get_user_id(email)
 
         # Make sure user does not yet exist
-        if bt_database.get_user_data(user_id):
+        if bt_database.does_user_exist(user_id):
             raise bt_exception.bt_conflict_error("User already exists")
 
         # Get new user auth data

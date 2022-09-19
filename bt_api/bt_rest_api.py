@@ -34,6 +34,7 @@ class user(Resource):
 
         try:
             bt_auth.create_user(args['email'], args['password'])
+            return flask.Response(status=201)
         except bt_exception.bt_input_error as error:
             return flask.Response(response={'message':error}, status=400)
         except bt_exception.bt_conflict_error as error:
@@ -76,7 +77,7 @@ class transactions(Resource):
 
         try:
             user_id, auth_glob = bt_auth.check_auth_glob(request.headers['auth_glob'])
-            transactions_list = json.loads(args['transactions'])['transactions']
+            transactions_list = json.loads(args['transactions'])
             num_new_transactions, num_duplicate_transactions = bt_database.create_transactions(user_id, transactions_list)
             status = 201 if num_new_transactions != 0 else 200
             response = {
@@ -86,8 +87,8 @@ class transactions(Resource):
             return flask.Response(response=json.dumps(response), status=status, headers={'auth_glob': auth_glob})
 
         except bt_exception.bt_input_error as error:
-            return flask.Response(response=error, status=400)
-        except KeyError:
+            return flask.Response(response={f"{error}"}, status=400)
+        except KeyError as error:
             return flask.Response(response="auth_glob is a required header", status=401)
         except bt_exception.bt_auth_error as error:
             return flask.Response(response=error, status=401)
@@ -100,4 +101,4 @@ api.add_resource(transactions, '/transactions')
 api.add_resource(user, '/user')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='192.168.4.4', port=5000)
