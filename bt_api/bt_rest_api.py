@@ -30,10 +30,11 @@ class user(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('email', required=True)
         parser.add_argument('password', required=True)
+        parser.add_argument('phone_num', required=False)
         args = parser.parse_args()
 
         try:
-            bt_auth.create_user(args['email'], args['password'])
+            bt_auth.create_user(args['email'], args['password'], args.get('phone_num'))
             return flask.Response(status=201)
         except bt_exception.bt_input_error as error:
             return flask.Response(response={'message':error}, status=400)

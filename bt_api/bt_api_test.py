@@ -13,7 +13,7 @@ class ingestDataError(Exception):
 class btApiTestError(Exception):
     pass
 
-bt_api_base_url = f"http://home.arcticridge.net:5000"
+bt_api_base_url = f"http://127.0.0.1:5000"
 
 def create_user(email, password):
     url = f"{bt_api_base_url}/user"

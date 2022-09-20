@@ -52,16 +52,30 @@ class bt_database():
         return json.load(open(cls.transactions_file_path, 'r'))[user_id]
 
     @classmethod
-    def add_user(cls, user_id, user_data):
+    def add_user(cls, user_data):
         with open(cls.users_file_path, 'r+') as users_file:
             try:
                 users_dict = json.load(users_file)
             except:
                 users_dict = {}
+            user_id = user_data['user_id']
             users_dict[user_id] = user_data
             users_file.seek(0)
             json.dump(users_dict, users_file, indent = 4)
         cls.add_transactions(user_id, {})
+        if phone_num := user_data.get('phone_num'):
+            cls.change_user_phone(user_id, phone_num)
+
+    @classmethod
+    def change_user_phone(cls, user_id, phone_num):
+        with open(cls.phone_map_path, 'r+') as phone_file:
+            try:
+                phones_dict = json.load(phone_file)
+            except:
+                phones_dict = {}
+            phones_dict[phone_num] = user_id
+            phone_file.seek(0)
+            json.dump(phones_dict, phone_file, indent = 4)
 
     @classmethod
     def add_transactions(cls, user_id, new_transactions):
@@ -211,23 +225,7 @@ class bt_auth():
         return hashlib.sha256(email.encode("utf-8")).hexdigest()[:32]
 
     @classmethod
-    def user_login(self, email, password): # Return auth_glob to authenticate further requests
-        # Get user ID
-        user_id = bt_auth.get_user_id(email)
-
-        # Check if user exists, throw exception if they don't
-        if not bt_database.does_user_exist(user_id):
-            raise bt_exception.bt_auth_error("User does not exist")
-        # Get users data
-        user_data = bt_database.get_user_data(user_id)
-        # Check if given password matches hash at user_id
-        if bt_auth.check_user_hash(user_key=user_data['key'], user_salt=user_data['salt'], user_password=password):
-            return bt_auth.get_auth_glob(user_id)
-        else:
-            raise bt_exception.bt_auth_error("Incorrect email or password")
-
-    @classmethod
-    def create_user(self, email, password): # Init new user
+    def create_user(self, email, password, phone_num=None): # Init new user
         # Check if valid email
         email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         if not re.fullmatch(email_regex, email):
@@ -244,11 +242,30 @@ class bt_auth():
         key, salt = bt_auth.do_hash(password)
 
         # Init new user sub dict
-        new_user_data = {
-            "email": email,
-            "key": b64encode(key).decode('utf-8'),
-            "salt": b64encode(salt).decode('utf-8')
-        }
+        new_user_data = {}
+        new_user_data['user_id'] = user_id
+        new_user_data['email'] = email
+        if phone_num:
+            new_user_data['phone_num'] = phone_num
+        new_user_data['key'] = b64encode(key).decode('utf-8')
+        new_user_data['salt'] = b64encode(salt).decode('utf-8')
 
         # Add new user to main users file, and init them in the transactions file
-        bt_database.add_user(user_id, new_user_data)
+        bt_database.add_user(new_user_data)
+
+    @classmethod
+    def user_login(self, email, password): # Return auth_glob to authenticate further requests
+        # Get user ID
+        user_id = bt_auth.get_user_id(email)
+
+        # Check if user exists, throw exception if they don't
+        if not bt_database.does_user_exist(user_id):
+            raise bt_exception.bt_auth_error("User does not exist")
+        # Get users data
+        user_data = bt_database.get_user_data(user_id)
+        # Check if given password matches hash at user_id
+        if bt_auth.check_user_hash(user_key=user_data['key'], user_salt=user_data['salt'], user_password=password):
+            return bt_auth.get_auth_glob(user_id)
+        else:
+            raise bt_exception.bt_auth_error("Incorrect email or password")
+
