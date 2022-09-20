@@ -14,7 +14,7 @@ from datetime import date, timedelta
 load_dotenv()
 
 parser = argparse.ArgumentParser(description="Handles excluding specific testting suites. So I can test without proper networking setup.")
-parser.add_argument('--email', help='Disables email tests for testing in different networks environment', default = 1, type=int)
+parser.add_argument('--email', help='Disables email tests for testing in different networks environment', default = 0, type=int)
 parser.add_argument('--msgSend', help='Disables the send message testing for different development environments', default=True, type= bool)
 
 args = parser.parse_args()
@@ -122,5 +122,7 @@ print(sha256(b"+11234567890").hexdigest())
 print(hash("+11234567890"))
 print(hash("+11234567890"))
 dataEntryScript.jsonIfy("1234567890", sha256(b"+11234567890").hexdigest(), "Unit Tester")
+
+dataEntryScript.turnOver()
 
 #dataEntryScript.makeJsonData(sha256(b"+17817750100").hexdigest(), "protect the turtles", 1700, 17)

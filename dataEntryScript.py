@@ -179,9 +179,9 @@ def turnOver():
             wsT = wb["Template"]
             if wsT["N1"].value is None:
                 for user in data:
-                    if user['filename'] is filenme:
+                    if user['filename'] in filenme:
                         billDate = user["cycle_date"]
-                        continue
+                        break
             else:
                 billDate = wsT["N1"].value
             wb.save(filenme)
