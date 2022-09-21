@@ -1,4 +1,10 @@
 .env
 /sheets
-/__pycache__
+__pycache__/
 /logs
+.DS_Store
+testingJsonImp.py
+nolooky.txt
+users.json
+bt_database/*
+.vscode/
