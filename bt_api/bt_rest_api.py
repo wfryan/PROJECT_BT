@@ -1,3 +1,4 @@
+import os
 import json
 from bt_exception import bt_input_error
 
@@ -112,4 +113,4 @@ api.add_resource(transactions, '/transactions')
 api.add_resource(user, '/user')
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host=os.getenv('FLASK_BIND_ADDRESS'), port=5000)
