@@ -559,6 +559,7 @@ def initJsonAccount(sender, un, billDate, budg):
     sheetP = os.getenv("sheetpath") + fname
     makeTempJson(sheetP)
     handleTurn(sheetP)
+    return ("Sheet Made: use format \nItem | Price\n to add an item")
 
 #Adds user to the json data structure. Useful for backend management and helps with privacy a bit more
 def makeJsonData(sender, senderHash, un, budg, cycle):
