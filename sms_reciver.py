@@ -112,6 +112,20 @@ def sms_reply():
             body = "Cycle override successful"
         else:
             body = "Contact Administrator"
+    elif "-Help " in msg or "-?" in msg:
+        if checkAuthUser(sender):
+            body = "HELP: Here is an summary of some of the commands you can do!\n"
+            body+= "Overview: Returns an overview of your monthly budget\n"
+            body+= "Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format\n"
+            body+= "Item | Price : Makes a purchase"
+            body+= "Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!\n"
+        else:
+            app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
+            body = "Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!\n"
+            body+= "The format should be Init : your filename : your billing day : your budget cap\n"
+            body+= "\nBilling day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21\n"
+            body+= "Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!\n"
+
     else:
         #Defaults to last purchase as a response because this assumes the text came from an authorized user
         # should switch into a conditional check
@@ -126,7 +140,7 @@ def sms_reply():
             body+= "The format should be Init : your filename : your billing day : your budget cap\n"
             body+= "\nBilling day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21\n"
             body+= "Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!\n"
-        
+
     resp.message(body)
     return str(resp)
 
