@@ -1,4 +1,3 @@
-from hashlib import sha1
 from flask import Flask, current_app, request, redirect, abort
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -103,8 +102,12 @@ def sms_reply():
     elif "JSON" in msg:
         #Jsonifys a preexisting account!
         splits = msg.split(":")
-        jsonIfy(request.values.get('From', None)[2:], sender, splits[1])
-        body = formatMsgJson(sender) + "\n\n" + genOverviewJson(sender)
+        if len(splits) > 1:
+            jsonIfy(request.values.get('From', None)[2:], sender, splits[1])
+            body = formatMsgJson(sender) + "\n\n" + genOverviewJson(sender)
+        else:
+            body = "Incorrect format.\n Correct Format: JSON : user_filename\n"
+            body+= "NOTE: you can make the filename anything you want!\n"
     elif "Manual Override" in msg:
         #Manual override for cycle date. should be a server side admin command based on its sole usecase
         if os.getenv("overrideCode") in msg:
@@ -117,7 +120,7 @@ def sms_reply():
             body = "HELP: Here is an summary of some of the commands you can do!\n"
             body+= "Overview: Returns an overview of your monthly budget\n"
             body+= "Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format\n"
-            body+= "Item | Price : Makes a purchase"
+            body+= "Item | Price : Makes a purchase\n"
             body+= "Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!\n"
         else:
             app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
