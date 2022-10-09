@@ -1,9 +1,9 @@
 # sms-budgeting-pyscript
- 
+
 This is a simple program designed to help make budgeting easier for people. It requires a little bit of setup and technical know how but it gets the job done for me.
 Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep track of their monthly budget simply by sending a text.
 
-10/10/22:
+10/8/22:
 
     **DEVELOPMENT UPDATES**
 
@@ -11,11 +11,11 @@ Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep
         I've been gone for a while, working on some stuff. Balancing this with my academic work has been a challenge but I've managed to get a lot done.
         Development on this will slow down for my academic year, but I still have features I want to implement and just plans for this project.
         Project BT and Project CR(Spin off project inspired by my work on BT) are going to be the main focus of my dev work outside of my academics.
-        I have a lot more work I want to do with this, and theres a lot of potential with the ideas swirling in my brain. 
-        I've also started referring to this as Project BT, just to simplify communication about this. 
+        I have a lot more work I want to do with this, and theres a lot of potential with the ideas swirling in my brain.
+        I've also started referring to this as Project BT, just to simplify communication about this.
         I have yet to setup a backup system for this, I've been busy with academics and I value my acutal development of this project more than a backup system for this.
 
-10/10/2022 UPDATES:
+10/8/2022 UPDATES:
 -   Refactored and redesigned the entire data storage system. There is no longer a direct way to just read the filename and know who it belongs to.
     -   This took a lot of work and an entire format restructure. I've spent the better part of a month developing and testing this to ensure this refactor would be compatible and on feature parity with the inital version.
 -   Theres now a detailed setup process with instructions on how to setup an account.
@@ -25,8 +25,8 @@ Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep
 -   Jsonify!
     -   There is one use case. One. It takes a prexisting account and converts it to the new format. This took a lot of work for a command that will be used at most twice, and has been tested extensively.
     -   If the name of this doesn't make the refactor obvious, I redesigned the backend storage system to store things like the user budget cap, and billing cycle date, in a json file *serving* as my user database. It stores the user's ID number, the filename stored on the server, filename that'll be emailed when the user requests to email the sheet, the budget cap and the billing cycle date. This limits the amount of personal information stored on the server, with the only thing being tied to the user the email filename, but that is user generated so it can be whatever the user wants. For testing purposes mine was "protect-the-turtles".
-    
-        
+
+
 
 
 More to come.
@@ -89,7 +89,7 @@ Overview Command:
         Total Remaining(USD): ##
 
 Init New Account:
-    
+
     Format of text to send:
         Init : Day : Budget
 
@@ -112,13 +112,13 @@ Change Date:
         Succesful Date Change:
             Budget Date Changed to: MM/DD/YY
         Unsuccesfull Date Change (due to format of text):
-            Incorrect Format: Use \"Change Date MM/DD/YY\" 
+            Incorrect Format: Use \"Change Date MM/DD/YY\"
 
 Email:
 
     Format of text to send:
         Email dummyemail@realemail.com
-    
+
     Response:
         Succesful Email:
             Your sheet was sent to: dummyemail@realemail.com
@@ -156,15 +156,15 @@ JSONIFY:
 HELP:
 
     Authorized Number:
-        
+
         HELP: Here is an summary of some of the commands you can do!
         Overview: Returns an overview of your monthly budget
         Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format
         Item | Price : Makes a purchase
         Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!
-    
+
     Unauthorized Number:
-            
+
             Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!
             The format should be Init : your filename : your billing day : your budget cap
             Billing day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21
