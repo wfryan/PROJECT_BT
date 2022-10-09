@@ -1,3 +1,4 @@
+from genericpath import isfile
 from flask import Flask, current_app, request, redirect, abort
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,6 +8,8 @@ from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
 import hashlib
+import json
+from myClasses import *
 from dataEntryScript import changeDateJson, checkAuthUser, formatMsgJson, genOverviewJson, handleDataFromJson
 from dataEntryScript import initJsonAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
 from dataEntryScript import turnOver
@@ -148,4 +151,20 @@ def sms_reply():
     return str(resp)
 
 if __name__ == "__main__":
+    if not os.path.isfile('users.json'):
+        newUser = User(hashlib.sha256(b"Initialization").hexdigest(), hashlib.sha256(hashlib.sha256(b"Initialization").hexdigest().encode('utf-8')).hexdigest(),
+        "Json Initialization", 10, 1000)
+        users = initJson().__dict__
+        tempList = newUser.__dict__
+        with open("temp.json", 'w+') as temp:
+            json.dump(users, temp, indent = 4)
+        data = json.load(open('temp.json', 'r'))
+        data['users'].append(tempList)
+        json.dump(data, open('temp.json', 'w'), indent=4)
+        os.rename('temp.json', 'users.json')
+        del newUser
+        del users
+        del data
+        del tempList
+
     app.run(host="0.0.0.0", port = PORT_env, debug=True)

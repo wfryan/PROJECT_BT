@@ -15,7 +15,7 @@ def sendMail(toaddr, sheetP, sender):
 
     message = MIMEMultipart()
     message["Date"] = str(date.today())
-    message["From"] = f"Will Ryan {senderemail}"
+    message["From"] = f"PROJECT BT {senderemail}"
     message["To"] = toaddr
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
@@ -34,7 +34,7 @@ def sendMail(toaddr, sheetP, sender):
     print(temp)
     encoders.encode_base64(part)
     part.add_header(
-        "Content-Disposition", 
+        "Content-Disposition",
         f"attatchment; filename= {temp}",
     )
     message.attach(part)
@@ -45,7 +45,7 @@ def sendMail(toaddr, sheetP, sender):
         server.starttls(context=context)
         server.ehlo()
         server.login(senderemail, passw)
-        server.sendmail(senderemail, toaddr, text) 
+        server.sendmail(senderemail, toaddr, text)
         #TODO fix email being sent to spam filter
 
 def sendMailJson(toaddr, sheetP, user):
@@ -55,7 +55,7 @@ def sendMailJson(toaddr, sheetP, user):
 
     message = MIMEMultipart()
     message["Date"] = str(date.today())
-    message["From"] = f"Will Ryan {senderemail}"
+    message["From"] = f"PROJECT BT {senderemail}"
     message["To"] = toaddr
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
@@ -74,7 +74,7 @@ def sendMailJson(toaddr, sheetP, user):
     print(temp)
     encoders.encode_base64(part)
     part.add_header(
-        "Content-Disposition", 
+        "Content-Disposition",
         f"attatchment; filename= {user['username'].replace(' ', '-')[1:]}",
     )
     message.attach(part)
@@ -85,4 +85,4 @@ def sendMailJson(toaddr, sheetP, user):
         server.starttls(context=context)
         server.ehlo()
         server.login(senderemail, passw)
-        server.sendmail(senderemail, toaddr, text) 
+        server.sendmail(senderemail, toaddr, text)
