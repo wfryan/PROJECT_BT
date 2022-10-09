@@ -115,7 +115,7 @@ def sms_reply():
             body = "Cycle override successful"
         else:
             body = "Contact Administrator"
-    elif "help " in msg.lower() or "-?" in msg:
+    elif "help" in msg.lower() or "-?" in msg:
         if checkAuthUser(sender):
             body = "HELP: Here is an summary of some of the commands you can do!\n"
             body+= "-Overview: Returns an overview of your monthly budget\n"
