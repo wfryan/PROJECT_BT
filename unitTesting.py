@@ -1,3 +1,4 @@
+from hashlib import sha256, sha512
 import dataEntryScript
 from dotenv import load_dotenv
 import os
@@ -6,10 +7,17 @@ import EmailSheet
 import openpyxl as opxl
 import threading
 import sendMsgs
+import argparse
 from time import sleep
+from datetime import date, timedelta
 
 load_dotenv()
 
+parser = argparse.ArgumentParser(description="Handles excluding specific testting suites. So I can test without proper networking setup.")
+parser.add_argument('--email', help='Disables email tests for testing in different networks environment', default = 0, type=int)
+parser.add_argument('--msgSend', help='Disables the send message testing for different development environments', default=True, type= bool)
+
+args = parser.parse_args()
 sheetP = os.getenv("sheetpath")
 sheetPOne = sheetP + "1234567890"+ ".xlsx"
 testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
@@ -17,41 +25,71 @@ testingLog = myLogger("Testing-Logger", 10, "Testing-Log")
 #TESTING INIT NEW ACCOUNT AND HANDLE DATA
 
 testingLog.logDebug("\n\n\tTESTING INIT AND DATA HANDLING\t\n\n")
-dataEntryScript.initNewAccount("+11234567890", 17, 6969)
-dataEntryScript.handleData("Mike's Apple | 25", "+11234567890")
-dataEntryScript.handleData("Taza | 50", "+11234567890")
-dataEntryScript.handleData("Chipotle | 25", "+11234567890")
-dataEntryScript.handleData("Baja Blasted Vodka| 60", "+11234567890")
-dataEntryScript.handleData("Fairlife IceCream | 4.59", "+11234567890")
-testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
-testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
+dataEntryScript.initNewAccount("1234567890", 17, 6969)
+dataEntryScript.handleData("Mike's Apple | 25", "1234567890")
+dataEntryScript.handleData("Taza | 50", "1234567890")
+dataEntryScript.handleData("Chipotle | 25", "1234567890")
+dataEntryScript.handleData("Baja Blasted Cola| 60", "1234567890")
+dataEntryScript.handleData("Fairlife IceCream | 4.59", "1234567890")
+testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
+testingLog.logInfo(dataEntryScript.formatMsg("1234567890"))
 
+#TESTING JSON REFACTOR
+dataEntryScript.initJsonAccount("+10987654321", "Unit-Testing.xlsx", 17, 6969)
+#print(dataEntryScript.getUser(sha256(b"+10987654321").hexdigest()))
+dataEntryScript.handleDataFromJson("Mike's Apple | 25", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Taza | 50", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Chipotle | 25", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Baja Blasted Cola| 60", sha256(b"+10987654321").hexdigest())
+dataEntryScript.handleDataFromJson("Fairlife IceCream | 4.59", sha256(b"+10987654321").hexdigest())
+dataEntryScript.changeDateJson("09/21/2002", sha256(b"+10987654321").hexdigest())
+dataEntryScript.removeDupes(sheetP + dataEntryScript.getUser(sha256(b"+10987654321").hexdigest())['filename'])
+dataEntryScript.manualOverJson(sha256(b"+10987654321").hexdigest())
+print("Testing Turn Over With Date of Yesterday")
+dataEntryScript.changeDateJson((date.today() - timedelta(days = 1)).strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print((date.today() - timedelta(days = 1)).strftime("%m/%d/%Y"))
+print("\nChanging Json Date to today")
+print(date.today().strftime("%m/%d/%Y"))
+dataEntryScript.changeDateJson(date.today().strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print("\nChanging Json Date to tmrw")
+dataEntryScript.changeDateJson((date.today() + timedelta(days = 1)).strftime("%m/%d/%Y"), sha256(b"+10987654321").hexdigest())
+dataEntryScript.turnOver()
+print((date.today() + timedelta(days = 1)).strftime("%m/%d/%Y"))
+
+
+
+print(args.email)
 #TESTING EMAILING
-testingLog.logDebug("\n\n TESTING EMAIL FUNCTIONALITY \n\n")
-testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "+11234567890"))
-EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "+11234567890")
+if args.email == 1:
+    testingLog.logDebug("\n\n TESTING EMAIL FUNCTIONALITY \n\n")
+    testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "1234567890", "1234567890"))
+    EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "1234567890")
+else:
+    testingLog.logDebug("\n\n SKPPING EMAIL TESTS \n\n")
 
 #TESTING SETUP SUM
 testingLog.logDebug("\n\n\tTESTING SUM CORRECTION\t\n\n")
-dataEntryScript.setupSum("+11234567890")
-testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
+dataEntryScript.setupSum("1234567890")
+testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
 wb = opxl.load_workbook(sheetPOne, data_only=True)
 ws = wb[wb.sheetnames[0]]
 ws['G1'] = 5555
 wb.save(sheetPOne)
 wb.close()
 
-testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
-dataEntryScript.setupSum("+11234567890")
-testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
+testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
+dataEntryScript.setupSum("1234567890")
+testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
 
 #TESTING HANDLE TURN, TURNOVER, CHANGEDATE, AND MAN OVERRIDE
 testingLog.logDebug("\t\n\nTESTING CYCLE TURNOVERS, auto and manual\t\n\n")
 dataEntryScript.turnOver()
-dataEntryScript.changeDate("1/12/11", "+11234567890")
-dataEntryScript.manualOverride("+11234567890")
-testingLog.logInfo(dataEntryScript.genOverview("+11234567890"))
-testingLog.logInfo(dataEntryScript.formatMsg("+11234567890"))
+dataEntryScript.changeDate("1/12/11", "1234567890")
+dataEntryScript.manualOverride("1234567890")
+testingLog.logInfo(dataEntryScript.genOverview("1234567890"))
+testingLog.logInfo(dataEntryScript.formatMsg("1234567890"))
 dataEntryScript.handleTurn(sheetPOne)
 
 #TESTING LOGGING ON MORE A DIFFERENT THREAD
@@ -75,3 +113,16 @@ testingLog.logWarn("Two threads simultaneously")
 testingThread2.join()
 #TESTING SENDUSGNOTIF
 #sendMsgs.sendUsgNotif("\n\n\tUnit Testing \n\n")
+
+
+#TESTTING HASH DEVELOPMENT
+testingLog.logWarn("\n\tHASHING TESTS: EXPECT SLOWDOWN\n")
+print(sha512(b"+11234567890").hexdigest())
+print(sha256(b"+11234567890").hexdigest())
+print(hash("+11234567890"))
+print(hash("+11234567890"))
+dataEntryScript.jsonIfy("1234567890", sha256(b"+11234567890").hexdigest(), "Unit Tester")
+
+dataEntryScript.turnOver()
+
+#dataEntryScript.makeJsonData(sha256(b"+17817750100").hexdigest(), "protect the turtles", 1700, 17)

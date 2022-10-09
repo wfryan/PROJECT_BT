@@ -1,4 +1,3 @@
-from hashlib import sha1
 from flask import Flask, current_app, request, redirect, abort
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,16 +6,16 @@ from functools import wraps
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from dotenv import load_dotenv
-from sendMsgs import sendUsgNotif
-from dataEntryScript import handleData, handleTurn, initNewAccount
-from dataEntryScript import formatMsg, setupSum, turnOver, manualOverride
-from dataEntryScript import genOverview, sendSheet, changeDate
-import os, threading, time, platform
+import hashlib
+from dataEntryScript import changeDateJson, checkAuthUser, formatMsgJson, genOverviewJson, handleDataFromJson
+from dataEntryScript import initJsonAccount, jsonIfy, manualOverJson, sendSheetJson, setupSumJson
+from dataEntryScript import turnOver
+import os, threading, time
 import schedule
-from logging.handlers import TimedRotatingFileHandler
 
 load_dotenv()
 
+#handles the autmoatic cycledate turnover
 def updateCycle():
     while True:
         schedule.run_pending()
@@ -33,17 +32,13 @@ users = {
     str(os.getenv("usname")):generate_password_hash(os.getenv("pss"))
 }
 
-
+#security stuff. could be improved upon
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
     #print(request.values.get('From', None))
-    if request.values.get('From', None) in os.getenv("authNumbers"):
-        app.logger.warning("Message Sent from Authorized Number")
-    else:
-     app.logger.warning("Message sent: Code 401")
 
 def validate_t_request(f):
     @wraps(f)
@@ -64,45 +59,91 @@ def validate_t_request(f):
 @auth.login_required
 def sms_reply():
     msg = request.values.get('Body', None)
-    sender = request.values.get('From', None)
+    sender = hashlib.sha256(request.values.get('From', None).encode('utf-8')).hexdigest()
     resp = MessagingResponse()
+    #print(hash(sender[1:]))
+    #Here is where the message gets parsed and the data gets handled and sent where it needs to be
     if "|" in msg and "Init" not in msg:
-        handleData(msg, sender)
-        body = formatMsg(sender)
+        #Handles a purchase
+        handleDataFromJson(msg, sender)
+        body = formatMsgJson(sender)
     elif "Overview" in msg:
-        body = genOverview(sender)
+        #handles overview
+        body = genOverviewJson(sender)
     elif "Init" in msg and len(msg) < 6:
-        body = "Incorrect Format\n Correct Format: Init : Billing Date : Budget "
+        #INIT HANDLING, wrong format
+        body = "Incorrect Format\n Correct Format: Init : File Name : Billing Date : Budget "
     elif "Init"  in msg:
+        #INIT HANDLING, proper format
         temp = msg.split(":")
-        body = initNewAccount(sender, temp[1][1:], temp[2][1:])
+        body = initJsonAccount(request.values.get('From', None), temp[1][1:], temp[2][1:], temp[3][1:])
     elif "Change Date" in msg.title():
+        #Changes cycle date.
         if len(msg) > 14:
             temp = msg.split(" ")
             newDate = temp[len(temp)-1]
-            changeDate(newDate, sender)
+            changeDateJson(newDate, sender)
             body = "Budget Date Changed to: " + newDate
         else:
             body = "Incorrect Format: Use \"Change Date MM/DD/YY\" "
     elif "Refresh" in msg.title():
-        setupSum(sender)
+        #Refreshes sum of total spent
+        setupSumJson(sender)
         body = "Total spent recalculated: call overview to get an updated value"
     elif "Email" in msg and "@" in msg:
+        #Emails the sheet
         splits = msg.split(" ")
         addr = ""
         for i in range(len(splits)):
             if "@" in splits[i]:
                 addr = splits[i]
 
-        body = sendSheet(addr, sender)
+        body = sendSheetJson(addr, sender)
+    elif "JSON" in msg:
+        #Jsonifys a preexisting account!
+        splits = msg.split(":")
+        if len(splits) > 1:
+            jsonIfy(request.values.get('From', None)[2:], sender, splits[1])
+            body = formatMsgJson(sender) + "\n\n" + genOverviewJson(sender)
+        else:
+            body = "Incorrect format.\n Correct Format: JSON : user_filename\n"
+            body+= "NOTE: you can make the filename anything you want!\n"
     elif "Manual Override" in msg:
+        #Manual override for cycle date. should be a server side admin command based on its sole usecase
         if os.getenv("overrideCode") in msg:
-            manualOverride(sender)
+            manualOverJson(sender)
             body = "Cycle override successful"
         else:
             body = "Contact Administrator"
+    elif "help" in msg.lower() or "-?" in msg:
+        if checkAuthUser(sender):
+            body = "HELP: Here is an summary of some of the commands you can do!\n"
+            body+= "-Overview: Returns an overview of your monthly budget\n"
+            body+= "-Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format\n"
+            body+= "-Item | Price : Makes a purchase\n"
+            body+= "-Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!\n"
+        else:
+            app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
+            body = "Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!\n"
+            body+= "The format should be Init : your filename : your billing day : your budget cap\n"
+            body+= "\nBilling day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21\n"
+            body+= "Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!\n"
+
     else:
-        body = "Last Purchase: \n" + formatMsg(sender)
+        #Defaults to last purchase as a response because this assumes the text came from an authorized user
+        # should switch into a conditional check
+        # sending last purchase or a program overview dependent on whether or not the user is authorized
+        #TODO make this conditional
+        if checkAuthUser(sender):
+            app.logger.warning("Message Sent from Authorized Number")
+            body = "Last Purchase: \n" + formatMsgJson(sender)
+        else:
+            app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
+            body = "Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!\n"
+            body+= "The format should be Init : your filename : your billing day : your budget cap\n"
+            body+= "\nBilling day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21\n"
+            body+= "Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!\n"
+
     resp.message(body)
     return str(resp)
 
