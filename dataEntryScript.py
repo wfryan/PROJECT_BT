@@ -205,7 +205,6 @@ def turnOver():
         else:
             pass
             #mylog.logInfo("Not a file")"""
-
 #Written, tested, and deprectaed before deployed
 def reHash(sender):
     fldrP = os.getenv("fldr")
@@ -216,28 +215,6 @@ def reHash(sender):
             tempNme = "Budgeting_Finances-"+ str(sha256(sender.encode('utf-8')).hexdigest()) + ".xlsx"
             newName = os.path.join(fldrP, tempNme)
             os.rename(filenme, newName)
-            """wb = load_workbook(filenme, data_only=True)
-            wsT = wb["Template"]
-            billDate = wsT["N1"].value
-            wb.save(filenme)
-            month = int(wb.sheetnames[0].split("-")[1])
-            wb.close()
-            if int(date.today().day) == int(billDate):
-                handleTurn(filenme)
-                print("New Cycle, sheet has turned over")
-                #mylog.logInfo("New Cycle, sheet has turned over")
-                removeDupes(filenme)
-            elif month == (int(date.today().month) - 1) and int(date.today().day) > int(billDate):
-                handleTurn(filenme)
-                print("New Cycle, sheet has turned over")
-                #mylog.logInfo("New Cycle, sheet has turned over")
-                removeDupes(filenme)
-            else:
-                pass
-                #mylog.logInfo("Not Today")
-        else:
-            pass
-            #mylog.logInfo("Not a file")"""
 
 #Calculates the sum of the total spent. Being deprecated
 def setupSum(sender):
@@ -604,7 +581,6 @@ def jsonIfy(sender, senderHash, un):
     os.rename(sheetP, fn)
     print(genOverviewJson(senderHash))
 
-
 #Gets user based off hash id
 def getUser(sendHash):
     data = json.load(open('users.json', 'r'))
@@ -617,7 +593,7 @@ def getUser(sendHash):
         y = "User does not exist!"
 
     return y
-
+#Checks if the sender is an authorized user in the database
 def checkAuthUser(sendHash):
     data = json.load(open('users.json', 'r'))
     val = False
