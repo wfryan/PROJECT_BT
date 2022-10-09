@@ -1,6 +1,0 @@
-hash{
-    filename: lalalala
-    cycledate
-    budgetcap
-    username
-}

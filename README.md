@@ -1,21 +1,47 @@
-# sms-budgeting-pyscript
+# PROJECT_BT
 
 This is a simple program designed to help make budgeting easier for people. It requires a little bit of setup and technical know how but it gets the job done for me.
 Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep track of their monthly budget simply by sending a text.
 
-10/8/22:
+***This definitly isn't the most user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features while building something that would serve a role in my life and solve a problem of my own.***
 
-    **DEVELOPMENT UPDATES**
 
-        It's been a while.
-        I've been gone for a while, working on some stuff. Balancing this with my academic work has been a challenge but I've managed to get a lot done.
-        Development on this will slow down for my academic year, but I still have features I want to implement and just plans for this project.
-        Project BT and Project CR(Spin off project inspired by my work on BT) are going to be the main focus of my dev work outside of my academics.
-        I have a lot more work I want to do with this, and theres a lot of potential with the ideas swirling in my brain.
-        I've also started referring to this as Project BT, just to simplify communication about this.
-        I have yet to setup a backup system for this, I've been busy with academics and I value my acutal development of this project more than a backup system for this.
+## 10/9/22:
 
-10/8/2022 UPDATES:
+I have rebranded this to Project BT. While this is less descriptive than sms budgeting pyscript, it is less of a mouthfull.
+Project BT (AKA Project BUDGET TEXTER/BUDGET TRACKER) is a budget tracking app that works entirely over sms texts!
+It does have *somewhat* strict formatting to work properly but it's actually fairly simple to use. It walks you through the setup process and is feature rich. This whole thing started so I could more easily track my personal expenses and practice good financial habits and it evolved into so much more than I could have imgained. I have a lot more in store for this project, and I am excited to share this with the world.
+
+I have more features planned for this but I won't be able to implement them for a little while as my acadmeic year progresses. Heres a preview of features I wish to implement by year's end. Its not everything, but its the top two I have planned next.
+
+-   Multiple budgets!
+    -   Right now this is fairly basic, and only lets you track one budget per account.
+    -   I plan to implement the ability to track more than one budget. It would make this program overall more usefull and practical. The simplicity of tracking one budget made building the base program efficient and quick.
+-   Custom cycle turn over!!
+    -   For the people who don't want to track a monthly budget!
+    -   There are instances where you may want to track their budget on a weekly, bimonthly, or even biweekly!
+    -   This will add for greater flexibility and make this more practical for more people.
+
+-   BONUS PLANNED FEATURES:
+    -   A setup script!
+        -   Since the Twilio number I use for this program personally is kept private, a setup script to let people test this out with their own twilio number would let people get a feel for the program! Especially since I don't have a terms of use written up for the proper handling and storage of users data, I figured it would be best to provide a way for people to set this up themselves on their own server!
+
+    -    Command to export the spreadsheet and provide a download link
+    -    Automatic budget remaining reminder 1 week before user's billing cycle day
+    -    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
+
+
+### DEVELOPER/PERSONAL UPDATES
+
+    It's been a while.
+    I've been gone for a while, working on some stuff. Balancing this with my academic work has been a challenge but I've managed to get a lot done.
+    Development on this will slow down for my academic year, but I still have features I want to implement and just plans for this project.
+    Project BT and Project CR(Spin off project inspired by my work on BT) are going to be the main focus of my dev work outside of my academics.
+    I have a lot more work I want to do with this, and theres a lot of potential with the ideas swirling in my brain.
+    I've also started referring to this as Project BT, just to simplify communication about this.
+    I have yet to setup a backup system for this, I've been busy with academics and I value my acutal development of this project more than a backup system for this.
+
+### DEVELOPMENT UPDATES 10/9/22:
 -   Refactored and redesigned the entire data storage system. There is no longer a direct way to just read the filename and know who it belongs to.
     -   This took a lot of work and an entire format restructure. I've spent the better part of a month developing and testing this to ensure this refactor would be compatible and on feature parity with the inital version.
 -   Theres now a detailed setup process with instructions on how to setup an account.
@@ -27,19 +53,7 @@ Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep
     -   If the name of this doesn't make the refactor obvious, I redesigned the backend storage system to store things like the user budget cap, and billing cycle date, in a json file *serving* as my user database. It stores the user's ID number, the filename stored on the server, filename that'll be emailed when the user requests to email the sheet, the budget cap and the billing cycle date. This limits the amount of personal information stored on the server, with the only thing being tied to the user the email filename, but that is user generated so it can be whatever the user wants. For testing purposes mine was "protect-the-turtles".
 
 
-
-
-More to come.
-Planned Features Updated (7/19/2022):
--    Command to export the spreadsheet and provide a download link
--    Automatic budget remaining reminder 1 week before user's billing cycle day
--    Down the line I would like to build a website to act as a signup for the service. Due to twilio trial limitations it would be a dummy  signnup but it is one of my goals for this project down the line.
--   Phone number hashing, so the filename can't be tied to a specific users phone number by the service
-
-
-
-
-Updates (07/27/2022):
+# Updates (07/27/2022):
 -   Mainly backend stuff. Added an event log to log when the automated tasks are run. Have more logging stuff to do but it can wait for now. Thats about it.
 
 
@@ -170,4 +184,3 @@ HELP:
             Billing day should just be the day. So if your billing cycle ends on the 21st of the month, just say 21
             Same thing or your budget cap! If your budget is 500 USD, just send 500! The currency doesn't matter!
 
-This definitly isn't a user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features
