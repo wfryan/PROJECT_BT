@@ -6,7 +6,6 @@ from myLogger import myLogger
 import EmailSheet
 import openpyxl as opxl
 import threading
-import sendMsgs
 import argparse
 from time import sleep
 from datetime import date, timedelta
@@ -124,5 +123,3 @@ print(hash("+11234567890"))
 dataEntryScript.jsonIfy("1234567890", sha256(b"+11234567890").hexdigest(), "Unit Tester")
 
 dataEntryScript.turnOver()
-
-#dataEntryScript.makeJsonData(sha256(b"+17817750100").hexdigest(), "protect the turtles", 1700, 17)
