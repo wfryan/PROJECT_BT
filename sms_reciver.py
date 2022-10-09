@@ -118,10 +118,10 @@ def sms_reply():
     elif "-Help " in msg or "-?" in msg:
         if checkAuthUser(sender):
             body = "HELP: Here is an summary of some of the commands you can do!\n"
-            body+= "Overview: Returns an overview of your monthly budget\n"
-            body+= "Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format\n"
-            body+= "Item | Price : Makes a purchase\n"
-            body+= "Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!\n"
+            body+= "-Overview: Returns an overview of your monthly budget\n"
+            body+= "-Change Date MM/DD/YY: Changes the date of your billing cycle by using the provided format\n"
+            body+= "-Item | Price : Makes a purchase\n"
+            body+= "-Email email@address.com : Sends a copy of your data as a spreadsheet to the email address you provide!\n"
         else:
             app.logger.warning("Message sent: Unauthorized Number. Prompting to init account")
             body = "Want to signup? Text back Init followed by a filename, billing date (just the day), and your budget cap!\n"
