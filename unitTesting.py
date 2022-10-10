@@ -1,4 +1,4 @@
-from hashlib import sha256, sha512
+from hashlib import *
 import dataEntryScript
 from dotenv import load_dotenv
 import os
