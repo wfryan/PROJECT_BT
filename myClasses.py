@@ -5,3 +5,7 @@ class User:
         self.username = username
         self.budget = budget
         self.cycle_date = cycle_date
+
+class initJson:
+    def __init__(self):
+        self.users = []
