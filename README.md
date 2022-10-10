@@ -1,7 +1,9 @@
 # PROJECT_BT
 
 This is a simple program designed to help make budgeting easier for people. It requires a little bit of setup and technical know how but it gets the job done for me.
-Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, and openpyxl, users can keep track of their monthly budget simply by sending a text.
+Using Twilio, Flask, Flask_HTTPAuth, python-dotenv, openpyxl, and Schedule by dbader, users can keep track of their monthly budget simply by sending a text.
+
+Flask and Flask_HTTPAuth serve the webserver Twilio's API hooks into for getting the texts, python-dotenv is how I bring my environment variables in from a separate file, openpyxl to maniuplate excel sheets, and Schedule assists with automated budget cycle turnover.
 
 ***This definitly isn't the most user friendly program but that was never truly the intentions. It's purpose was to help me learn how to utilize Flask and learn more about Twilio's api and features while building something that would serve a role in my life and solve a problem of my own.***
 
