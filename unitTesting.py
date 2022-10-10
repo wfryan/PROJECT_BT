@@ -63,8 +63,8 @@ print(args.email)
 #TESTING EMAILING
 if args.email == 1:
     testingLog.logDebug("\n\n TESTING EMAIL FUNCTIONALITY \n\n")
-    testingLog.logInfo(dataEntryScript.sendSheet("williamryan978@icloud.com", "1234567890", "1234567890"))
-    EmailSheet.sendMail("williamryan978@icloud.com", sheetPOne, "1234567890")
+    testingLog.logInfo(dataEntryScript.sendSheet("insert email here", "1234567890", "1234567890"))
+    EmailSheet.sendMail("insert email here", sheetPOne, "1234567890")
 else:
     testingLog.logDebug("\n\n SKPPING EMAIL TESTS \n\n")
 
